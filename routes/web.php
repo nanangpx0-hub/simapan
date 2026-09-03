@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Master\AllocationController;
 use App\Http\Controllers\Master\AssignmentController;
+use App\Http\Controllers\Master\DsrtSampleController;
 use App\Http\Controllers\Master\OfficerAliasController;
 use App\Http\Controllers\Master\OfficerController;
 use App\Http\Controllers\Master\RegionController;
@@ -127,6 +128,20 @@ Route::middleware(['auth', 'permission:allocation.view'])->prefix('alokasi')->na
     Route::get('/', [AllocationController::class, 'index'])->name('index');
     Route::get('{allocation}', [AllocationController::class, 'show'])->name('show');
     Route::get('{allocation}/penugasan', [AssignmentController::class, 'index'])->name('assignments.index');
+});
+
+Route::middleware(['auth', 'permission:dsrt.manage'])->prefix('alokasi/{allocation}/dsrt')->name('allocations.dsrt.')->group(function () {
+    Route::get('create', [DsrtSampleController::class, 'create'])->name('create');
+    Route::post('/', [DsrtSampleController::class, 'store'])->name('store');
+    Route::get('{dsrtSample}/edit', [DsrtSampleController::class, 'edit'])->name('edit');
+    Route::match(['put', 'patch'], '{dsrtSample}', [DsrtSampleController::class, 'update'])->name('update');
+    Route::post('{dsrtSample}/verify', [DsrtSampleController::class, 'verify'])->name('verify');
+    Route::post('{dsrtSample}/archive', [DsrtSampleController::class, 'archive'])->name('archive');
+});
+
+Route::middleware(['auth', 'permission:dsrt.view'])->prefix('alokasi/{allocation}/dsrt')->name('allocations.dsrt.')->group(function () {
+    Route::get('/', [DsrtSampleController::class, 'index'])->name('index');
+    Route::get('{dsrtSample}', [DsrtSampleController::class, 'show'])->name('show');
 });
 
 require __DIR__.'/auth.php';

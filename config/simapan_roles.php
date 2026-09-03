@@ -41,6 +41,9 @@ return [
         'allocation.view',
         'allocation.manage',
         'allocation.assign',
+        'dsrt.view',
+        'dsrt.manage',
+        'dsrt.verify',
     ],
 
     'basic_permissions' => [

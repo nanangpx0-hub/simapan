@@ -26,10 +26,10 @@ test('delapan role sistem tersedia dengan guard web', function (): void {
     }
 });
 
-test('delapan belas permission kanonik tersedia dengan guard web', function (): void {
+test('dua puluh satu permission kanonik tersedia dengan guard web', function (): void {
     $names = config('simapan_roles.permissions', []);
 
-    expect($names)->toHaveCount(18);
+    expect($names)->toHaveCount(21);
 
     foreach ($names as $name) {
         $permission = Permission::where('name', $name)->where('guard_name', 'web')->first();
@@ -37,10 +37,10 @@ test('delapan belas permission kanonik tersedia dengan guard web', function (): 
     }
 });
 
-test('administrator memiliki seluruh 18 permission', function (): void {
+test('administrator memiliki seluruh 21 permission', function (): void {
     $admin = Role::where('name', 'administrator')->firstOrFail();
 
-    expect($admin->permissions)->toHaveCount(18);
+    expect($admin->permissions)->toHaveCount(21);
 
     foreach (config('simapan_roles.permissions', []) as $name) {
         expect($admin->hasPermissionTo($name))->toBeTrue();
@@ -58,7 +58,7 @@ test('setiap role non-admin hanya memiliki dashboard dan profile', function (): 
 });
 
 test('role non-admin tidak memiliki permission admin audit maupun master manage', function (): void {
-    $denied = ['admin.user.manage', 'admin.role.manage', 'audit.view', 'master.work_unit.manage', 'master.survey_type.manage', 'master.survey_period.manage', 'master.region.manage', 'master.officer.manage', 'allocation.view', 'allocation.manage', 'allocation.assign'];
+    $denied = ['admin.user.manage', 'admin.role.manage', 'audit.view', 'master.work_unit.manage', 'master.survey_type.manage', 'master.survey_period.manage', 'master.region.manage', 'master.officer.manage', 'allocation.view', 'allocation.manage', 'allocation.assign', 'dsrt.view', 'dsrt.manage', 'dsrt.verify'];
 
     foreach (['field_officer', 'social_operator', 'ipds_operator', 'viewer'] as $slug) {
         $role = Role::where('name', $slug)->firstOrFail();

@@ -210,6 +210,39 @@ Reassign menutup lama + membuat baru tanpa hapus riwayat; kelola hanya saat
 `DRAFT/ACTIVE/SUSPENDED`. Unit petugas: lapangan→`SOSIAL`, pengolahan→`PENGOLAHAN_LS`.
 Index: `allocation_id`, `officer_id`, `assignment_role`, `is_active`.
 
+### dsrt_samples (sampel rumah tangga Susenas) — terimplementasi Fase 2B
+
+| Kolom | Tipe | Keterangan |
+|---|---|---|
+| id | BIGINT U PK | |
+| allocation_id | BIGINT U FK>allocations.restrict | nested; hanya alokasi Susenas |
+| nus | VARCHAR(32) | string, immutable; unique per alokasi |
+| nurt | VARCHAR(32) | string, immutable; unique per alokasi |
+| family_number | VARCHAR(32) NULL | string |
+| building_number | VARCHAR(32) NULL | string |
+| household_number | VARCHAR(32) NULL | string |
+| krt_name | VARCHAR(255) | wajib |
+| address | TEXT NULL | sensitif; masking; tak masuk audit |
+| krt_education_code | VARCHAR(32) NULL | string |
+| enumeration_status | VARCHAR(30) default `PENDING` | 12 nilai enum |
+| contact_person | VARCHAR(150) NULL | sensitif; masking; tak masuk audit |
+| contact_phone | VARCHAR(30) NULL | sensitif; masking; tak masuk audit |
+| notes | TEXT NULL | wajib untuk status khusus; tak masuk audit |
+| record_status | VARCHAR(20) default `DRAFT` | `DRAFT/VERIFIED/ARCHIVED`; via action |
+| created_by | BIGINT U FK>users.restrict | |
+| verified_by | BIGINT U NULL FK>users.nullOnDelete | server-side |
+| verified_at | DATETIME NULL | server-side |
+| archived_by | BIGINT U NULL FK>users.nullOnDelete | server-side |
+| archived_at | DATETIME NULL | server-side |
+| timestamps | | |
+
+`VERIFIED` = review administrasi siap rujukan (bukan finalisasi hasil).
+Transisi: `DRAFT→VERIFIED/ARCHIVED`, `VERIFIED→ARCHIVED`; tanpa reopen.
+Ubah hanya saat `DRAFT` + alokasi `DRAFT/ACTIVE/SUSPENDED`. Tanpa delete UI.
+Seeder dummy: `NURT-001/002/003` DRAFT tanpa kontak.
+Unique: `(allocation_id, nus)`, `(allocation_id, nurt)`.
+Index: `(allocation_id, record_status)`, `enumeration_status`, `krt_name`.
+
 ## 3. Relasi
 
 - `WorkUnit 1-N anak WorkUnit`; `WorkUnit 1-N Officer`.
@@ -221,12 +254,14 @@ Index: `allocation_id`, `officer_id`, `assignment_role`, `is_active`.
 - Fase 2A: `SurveyPeriod 1-N Allocation`; `Region 1-N Allocation` (desa);
   `Allocation 1-N Assignment` (histori); `Officer 1-N Assignment`;
   `User 1-N Allocation/Assignment` (creator/assigner).
+- Fase 2B: `Allocation 1-N DsrtSample`; `User 1-N DsrtSample` (creator/verifier/archiver).
 
 ## 4. Migration
 
 - Satu migration per tabel di atas + publish Spatie, berurutan dependensi:
   `work_units → survey_types → survey_periods → regions → officers → officer_aliases → audit_logs`.
 - Fase 2A menambah: `allocations → assignments` (setelah master).
+- Fase 2B menambah: `dsrt_samples` (setelah alokasi).
 - Append-only: perubahan memakai migration baru; larang edit migration merged/jalan.
 - FK memakai `restrict` kecuali dinyatakan (`officers.user_id nullOnDelete`, `officer_aliases cascade`).
 - Contoh nama: `2026_01_01_000001_create_work_units_table.php` (tanggal nyata saat implementasi).

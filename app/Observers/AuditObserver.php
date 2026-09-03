@@ -6,6 +6,7 @@ namespace App\Observers;
 
 use App\Models\Allocation;
 use App\Models\Assignment;
+use App\Models\DsrtSample;
 use App\Models\Officer;
 use App\Models\Region;
 use App\Models\SurveyPeriod;
@@ -158,6 +159,13 @@ class AuditObserver
             }
 
             return 'updated';
+        }
+
+        if ($model instanceof DsrtSample) {
+            $keys = array_unique(array_merge(array_keys($old), array_keys($new)));
+            $nonStatus = array_diff($keys, ['record_status', 'verified_by', 'verified_at', 'archived_by', 'archived_at']);
+
+            return $nonStatus === [] ? null : 'updated';
         }
 
         return 'updated';

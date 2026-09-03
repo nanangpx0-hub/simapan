@@ -1,5 +1,9 @@
 <?php
 
+use App\Models\Allocation;
+use App\Models\Region;
+use App\Models\SurveyPeriod;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -47,4 +51,42 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+function adminDsrtUji(): User
+{
+    $admin = User::factory()->create();
+    $admin->assignRole('administrator');
+
+    return $admin;
+}
+
+function alokasiSusenasUji(User $admin, string $nks = 'NKS-DSRT-001'): Allocation
+{
+    $period = SurveyPeriod::where('code', 'SUSENAS-S1-2099')->firstOrFail();
+    $desa = Region::where('full_code', '9901001001')->firstOrFail();
+
+    return Allocation::create([
+        'survey_period_id' => $period->getKey(),
+        'village_region_id' => $desa->getKey(),
+        'nks' => $nks,
+        'sls_name' => 'SLS DSRT Uji',
+        'status' => 'DRAFT',
+        'created_by' => $admin->getKey(),
+    ]);
+}
+
+function alokasiSerutiUji(User $admin, string $nks = 'NKS-DSRT-SERUTI'): Allocation
+{
+    $period = SurveyPeriod::where('code', 'SERUTI-T1-2099')->firstOrFail();
+    $desa = Region::where('full_code', '9901001001')->firstOrFail();
+
+    return Allocation::create([
+        'survey_period_id' => $period->getKey(),
+        'village_region_id' => $desa->getKey(),
+        'nks' => $nks,
+        'sls_name' => 'SLS Seruti Uji',
+        'status' => 'DRAFT',
+        'created_by' => $admin->getKey(),
+    ]);
 }

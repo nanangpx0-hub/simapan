@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
                 $this->call(DevelopmentAdminSeeder::class);
                 $this->call(SurveyPeriodSeeder::class);
                 $this->call(AllocationSeeder::class);
+                $this->call(DsrtSampleSeeder::class);
             }
         });
     }

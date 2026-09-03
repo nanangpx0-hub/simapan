@@ -29,6 +29,11 @@
                         @can('allocation.assign')
                             <a href="{{ route('allocations.assignments.index', $allocation) }}" class="underline">{{ __('Kelola penugasan') }}</a>
                         @endcan
+                        @if ($allocation->period?->surveyType?->code === 'SUSENAS')
+                            @can('dsrt.view')
+                                <a href="{{ route('allocations.dsrt.index', $allocation) }}" class="underline">{{ __('DSRT Susenas') }}</a>
+                            @endcan
+                        @endif
                         @can('allocation.manage')
                         @if ($allocation->status === 'DRAFT')
                             <form method="POST" action="{{ route('allocations.activate', $allocation) }}">

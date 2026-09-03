@@ -29,6 +29,7 @@ final class AuditSanitizer
         'db_password',
         'nik',
         'phone',
+        'contact_person',
         'contact_phone',
         'telephone',
         'whatsapp',

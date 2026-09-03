@@ -21,7 +21,8 @@ Fase 1B-3 selesai: master periode survei dengan workflow status (tanpa delete fi
 Fase 1B-4 selesai: master petugas + alias (tanpa delete fisik UI).
 Fase 1B-5 selesai: audit trail append-only + halaman read-only.
 Fase 2A selesai: alokasi kegiatan + penugasan historis (tanpa delete UI).
-Belum ada DSRT/dokumen/temuan/impor (tanpa Livewire, upload, Excel).
+Fase 2B selesai: DSRT Susenas nested alokasi (tanpa delete UI).
+Belum ada dokumen/temuan/impor/finalisasi (tanpa Livewire, upload, Excel).
 
 ## Instalasi Lokal (Laragon, MySQL 8.0.30)
 
@@ -64,9 +65,10 @@ administrator hanya boleh assign/cabut role user lain, bukan dirinya sendiri.
 `admin.user.manage`, `admin.role.manage`, `audit.view`,
 `master.work_unit.view/manage`, `master.survey_type.view/manage`,
 `master.survey_period.view/manage`, `master.region.view/manage`,
-`master.officer.view/manage`, `allocation.view/manage/assign` (18 total sejak Fase 2A).
+  `master.officer.view/manage`, `allocation.view/manage/assign` (18 total sejak Fase 2A),
+  `dsrt.view/manage/verify` (21 total sejak Fase 2B).
 
-Matriks: `administrator` memegang semua 18; tujuh role lain hanya
+Matriks: `administrator` memegang semua 21; tujuh role lain hanya
 `dashboard.view` + `profile.manage` (tanpa akses survei global; tiket
 Operator Sos/IPDS menyusul). Tanpa `Gate::before`; tanpa bypass email/ID.
 Halaman `/profile` wajib `profile.manage` (fungsi Breeze selain otorisasi tidak diubah).
@@ -242,6 +244,34 @@ Impor CSV/XLSX ditunda.
 - Test: `AllocationAccessTest`, `AllocationValidationTest`,
   `AllocationStatusTest`, `AssignmentHistoryTest`, `AssignmentAccessTest`,
   `AllocationAuditTest`, `AllocationSeederTest`.
+
+## DSRT Fase 2B
+
+Diimplementasikan: `dsrt_samples` nested alokasi Susenas
+(route `/alokasi/{allocation}/dsrt`, nama route `allocations.dsrt.*`;
+akses via detail alokasi, tanpa menu global; tanpa delete UI).
+Impor CSV/XLSX, dokumen, temuan, cek DSRT, finalisasi belum dibuat.
+
+- Identitas: `allocation` + `nus` + `nurt`; NUS/NURT unique per alokasi;
+  semua nomor string (nol depan aman), immutable setelah create.
+- Hanya alokasi Susenas (`surveyType.code = SUSENAS`); Seruti konsisten 422,
+  mismatch nested 404.
+- Lifecycle: `DRAFT → VERIFIED`, `DRAFT → ARCHIVED`, `VERIFIED → ARCHIVED`;
+  lainnya 422; `ARCHIVED` final; tanpa reopen.
+- `VERIFIED` = review administrasi siap rujukan lanjut (bukan finalisasi hasil).
+- Ubah hanya saat `DRAFT` + alokasi `DRAFT/ACTIVE/SUSPENDED`;
+  `verified_by/at`, `archived_by/at` server-side.
+- Verify mensyaratkan NUS/NURT/KRT/enumerasi valid (+ notes untuk status khusus).
+- Sensitif: `address`, `contact_person`, `contact_phone` — masking di daftar
+  (telepon `••••` + 4 digit), penuh hanya `dsrt.manage` di detail;
+  tak pernah di audit values, error, flash, seed, test.
+- Form tak merepopulasi kontak/alamat setelah error validasi.
+- Seeder dummy: 3 baris `NURT-001/002/003` DRAFT tanpa kontak (idempotent).
+- Permission: `dsrt.view/manage/verify` (21 total)
+  (guest → login; tanpa permission → 403; validasi/transisi → 422; tak ditemukan → 404).
+- Test: `DsrtAccessTest`, `DsrtSusenasGateTest`, `DsrtValidationTest`,
+  `DsrtStatusTest`, `DsrtMaskingTest`, `DsrtAuditTest`,
+  `DsrtSeederTest`, `DsrtNavigationTest`.
 
 ## Unit
 
