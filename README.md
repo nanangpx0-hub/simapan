@@ -10,6 +10,7 @@ Aplikasi web internal untuk manajemen pengolahan dan pengawasan Susenas–Seruti
 - Blade + Livewire 3
 - Auth session + CSRF, RBAC `spatie/laravel-permission`
 - Test: Pest + Factory dummy
+- UI: shell admin responsif (sidebar + widget dashboard) di atas Tailwind + Alpine, tanpa Bootstrap/jQuery
 
 ## Status
 
@@ -22,7 +23,8 @@ Fase 1B-4 selesai: master petugas + alias (tanpa delete fisik UI).
 Fase 1B-5 selesai: audit trail append-only + halaman read-only.
 Fase 2A selesai: alokasi kegiatan + penugasan historis (tanpa delete UI).
 Fase 2B selesai: DSRT Susenas nested alokasi (tanpa delete UI).
-Belum ada dokumen/temuan/impor/finalisasi (tanpa Livewire, upload, Excel).
+Fase 2C-1 selesai: dokumen fisik + manifest + serah terima + penugasan internal (tanpa delete UI).
+Belum ada peminjaman/temuan/impor/finalisasi (tanpa Livewire, upload, Excel).
 
 ## Instalasi Lokal (Laragon, MySQL 8.0.30)
 
@@ -66,9 +68,10 @@ administrator hanya boleh assign/cabut role user lain, bukan dirinya sendiri.
 `master.work_unit.view/manage`, `master.survey_type.view/manage`,
 `master.survey_period.view/manage`, `master.region.view/manage`,
   `master.officer.view/manage`, `allocation.view/manage/assign` (18 total sejak Fase 2A),
-  `dsrt.view/manage/verify` (21 total sejak Fase 2B).
+  `dsrt.view/manage/verify` (21 total sejak Fase 2B),
+  `document.view/manage/receive/assign` (25 total sejak Fase 2C-1).
 
-Matriks: `administrator` memegang semua 21; tujuh role lain hanya
+Matriks: `administrator` memegang semua 25; tujuh role lain hanya
 `dashboard.view` + `profile.manage` (tanpa akses survei global; tiket
 Operator Sos/IPDS menyusul). Tanpa `Gate::before`; tanpa bypass email/ID.
 Halaman `/profile` wajib `profile.manage` (fungsi Breeze selain otorisasi tidak diubah).
@@ -272,6 +275,32 @@ Impor CSV/XLSX, dokumen, temuan, cek DSRT, finalisasi belum dibuat.
 - Test: `DsrtAccessTest`, `DsrtSusenasGateTest`, `DsrtValidationTest`,
   `DsrtStatusTest`, `DsrtMaskingTest`, `DsrtAuditTest`,
   `DsrtSeederTest`, `DsrtNavigationTest`.
+
+## Dokumen Fase 2C-1
+
+Diimplementasikan: dokumen fisik + manifest + serah terima + riwayat pemegang
++ penugasan internal (route `/dokumen`, `/manifest`; tanpa delete UI).
+Tanpa peminjaman, upload, QR, OCR, notifikasi, arsip/musnah, temuan.
+
+- Tepat-satu-konteks per dokumen (`allocation` XOR `dsrt_sample` — FormRequest +
+  CHECK MySQL); format hanya `PHYSICAL`; tanpa file/isi/PII.
+- Nomor manifest server-side `DM-YYYYMMDD-###` (transaction + lock + retry,
+  unique sebagai jaring akhir); hanya SOSIAL → PENGOLAHAN_LS; maks 200 item.
+- Submit mengunci item, membuat transfer snapshot, holder tetap SOSIAL.
+- Terima per item (qty/kondisi/status + note bila non-COMPLETE);
+  hasil REJECTED > PARTIAL > NOTED > COMPLETE; holder pindah hanya yang diterima.
+- Satu pemegang aktif (unique DB + lock + validasi); riwayat append-only.
+- Penugasan internal: dokumen `RECEIVED` + holder PENGOLAHAN_LS + officer
+  ACTIVE unit PENGOLAHAN_LS; satu ACTIVE per dokumen; tanpa fitur kembali.
+- Seeder dummy: `KUESIONER/DAFTAR_SAMPEL/BERITA_ACARA`,
+  `LEMARI-CONTOH-A1/RUANG-ARSIP-CONTOH`, `DOC-2099-001/002`,
+  manifest `DM-20990101-001` DRAFT (idempotent, tanpa audit).
+- Permission: `document.view/manage/receive/assign` (25 total)
+  (guest → login; tanpa permission → 403; validasi/transisi → 422; tak ditemukan → 404).
+- Test: `DocumentAccessTest`, `DocumentValidationTest`,
+  `ManifestWorkflowTest`, `TransferReceiptTest`, `HolderActiveTest`,
+  `AssignInternalTest`, `DocumentAuditTest`, `DocumentSeederTest`,
+  `DocumentNavigationTest`.
 
 ## Unit
 

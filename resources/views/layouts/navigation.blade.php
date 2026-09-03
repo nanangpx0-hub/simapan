@@ -1,194 +1,122 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
-    <!-- Primary Navigation Menu -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex">
-                <!-- Logo -->
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
-                    </a>
-                </div>
+{{-- Mobile overlay --}}
+<div x-show="sidebarOpen" x-transition.opacity class="fixed inset-0 z-30 bg-gray-900/50 lg:hidden" @click="sidebarOpen = false" style="display: none;"></div>
 
-                <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
+{{-- Sidebar --}}
+<aside :class="{'-translate-x-full': ! sidebarOpen}" class="fixed inset-y-0 left-0 z-40 w-64 -translate-x-full lg:translate-x-0 transform transition-transform duration-200 ease-in-out bg-indigo-950 flex flex-col">
+    <div class="flex items-center gap-2 h-16 px-4 border-b border-white/10 shrink-0">
+        <a href="{{ route('dashboard') }}" class="flex items-center gap-2 min-w-0">
+            <x-application-logo class="block h-8 w-auto fill-current text-white" />
+            <span class="text-white font-semibold tracking-wide truncate">SIMAPAN</span>
+        </a>
+        <button @click="sidebarOpen = false" class="lg:hidden ms-auto p-1 rounded text-indigo-200 hover:text-white" aria-label="{{ __('Tutup menu') }}">
+            <svg class="h-5 w-5" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-5 text-sm">
+        <div>
+            <p class="px-3 mb-1 text-[11px] font-semibold uppercase tracking-wider text-indigo-300/70">{{ __('Menu Utama') }}</p>
+            <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-md {{ request()->routeIs('dashboard') ? 'bg-white/10 text-white font-medium' : 'text-indigo-100/80 hover:bg-white/5 hover:text-white' }}">
+                {{ __('Dashboard') }}
+            </a>
+        </div>
+
+        @canany(['admin.user.manage', 'admin.role.manage', 'audit.view'])
+            <div>
+                <p class="px-3 mb-1 text-[11px] font-semibold uppercase tracking-wider text-indigo-300/70">{{ __('Administrasi') }}</p>
+                <div class="space-y-0.5">
                     @can('admin.user.manage')
-                        <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                        <a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md {{ request()->routeIs('admin.users.*') ? 'bg-white/10 text-white font-medium' : 'text-indigo-100/80 hover:bg-white/5 hover:text-white' }}">
                             {{ __('Pengguna') }}
-                        </x-nav-link>
+                        </a>
                     @endcan
                     @can('admin.role.manage')
-                        <x-nav-link :href="route('admin.roles.index')" :active="request()->routeIs('admin.roles.*')">
+                        <a href="{{ route('admin.roles.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md {{ request()->routeIs('admin.roles.*') ? 'bg-white/10 text-white font-medium' : 'text-indigo-100/80 hover:bg-white/5 hover:text-white' }}">
                             {{ __('Role') }}
-                        </x-nav-link>
-                    @endcan
-                    @can('master.survey_type.view')
-                        <x-nav-link :href="route('master.jenis-survei.index')" :active="request()->routeIs('master.jenis-survei.*')">
-                            {{ __('Jenis Survei') }}
-                        </x-nav-link>
-                    @endcan
-                    @can('master.work_unit.view')
-                        <x-nav-link :href="route('master.unit-kerja.index')" :active="request()->routeIs('master.unit-kerja.*')">
-                            {{ __('Unit Kerja') }}
-                        </x-nav-link>
-                    @endcan
-                    @can('master.survey_period.view')
-                        <x-nav-link :href="route('master.survey_periods.index')" :active="request()->routeIs('master.survey_periods.*')">
-                            {{ __('Periode Survei') }}
-                        </x-nav-link>
-                    @endcan
-                    @can('master.officer.view')
-                        <x-nav-link :href="route('master.officers.index')" :active="request()->routeIs('master.officers.*')">
-                            {{ __('Master Petugas') }}
-                        </x-nav-link>
-                    @endcan
-                    @can('allocation.view')
-                        <x-nav-link :href="route('allocations.index')" :active="request()->routeIs('allocations.*')">
-                            {{ __('Alokasi Kegiatan') }}
-                        </x-nav-link>
+                        </a>
                     @endcan
                     @can('audit.view')
-                        <x-nav-link :href="route('audit_logs.index')" :active="request()->routeIs('audit_logs.*')">
+                        <a href="{{ route('audit_logs.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md {{ request()->routeIs('audit_logs.*') ? 'bg-white/10 text-white font-medium' : 'text-indigo-100/80 hover:bg-white/5 hover:text-white' }}">
                             {{ __('Audit Trail') }}
-                        </x-nav-link>
-                    @endcan
-                    @can('master.region.view')
-                        <x-nav-link :href="route('master.wilayah.index')" :active="request()->routeIs('master.wilayah.*')">
-                            {{ __('Master Wilayah') }}
-                        </x-nav-link>
+                        </a>
                     @endcan
                 </div>
             </div>
+        @endcanany
 
-            <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <x-dropdown align="right" width="48">
-                    <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()->name }}</div>
-
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </button>
-                    </x-slot>
-
-                    <x-slot name="content">
-                        @can('profile.manage')
-                            <x-dropdown-link :href="route('profile.edit')">
-                                {{ __('Profile') }}
-                            </x-dropdown-link>
-                        @endcan
-
-                        <!-- Authentication -->
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                                {{ __('Log Out') }}
-                            </x-dropdown-link>
-                        </form>
-                    </x-slot>
-                </x-dropdown>
+        @canany(['master.survey_type.view', 'master.work_unit.view', 'master.survey_period.view', 'master.region.view', 'master.officer.view'])
+            <div>
+                <p class="px-3 mb-1 text-[11px] font-semibold uppercase tracking-wider text-indigo-300/70">{{ __('Master Data') }}</p>
+                <div class="space-y-0.5">
+                    @can('master.survey_type.view')
+                        <a href="{{ route('master.jenis-survei.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md {{ request()->routeIs('master.jenis-survei.*') ? 'bg-white/10 text-white font-medium' : 'text-indigo-100/80 hover:bg-white/5 hover:text-white' }}">
+                            {{ __('Jenis Survei') }}
+                        </a>
+                    @endcan
+                    @can('master.work_unit.view')
+                        <a href="{{ route('master.unit-kerja.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md {{ request()->routeIs('master.unit-kerja.*') ? 'bg-white/10 text-white font-medium' : 'text-indigo-100/80 hover:bg-white/5 hover:text-white' }}">
+                            {{ __('Unit Kerja') }}
+                        </a>
+                    @endcan
+                    @can('master.survey_period.view')
+                        <a href="{{ route('master.survey_periods.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md {{ request()->routeIs('master.survey_periods.*') ? 'bg-white/10 text-white font-medium' : 'text-indigo-100/80 hover:bg-white/5 hover:text-white' }}">
+                            {{ __('Periode Survei') }}
+                        </a>
+                    @endcan
+                    @can('master.region.view')
+                        <a href="{{ route('master.wilayah.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md {{ request()->routeIs('master.wilayah.*') ? 'bg-white/10 text-white font-medium' : 'text-indigo-100/80 hover:bg-white/5 hover:text-white' }}">
+                            {{ __('Master Wilayah') }}
+                        </a>
+                    @endcan
+                    @can('master.officer.view')
+                        <a href="{{ route('master.officers.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md {{ request()->routeIs('master.officers.*') ? 'bg-white/10 text-white font-medium' : 'text-indigo-100/80 hover:bg-white/5 hover:text-white' }}">
+                            {{ __('Master Petugas') }}
+                        </a>
+                    @endcan
+                </div>
             </div>
+        @endcanany
 
-            <!-- Hamburger -->
-            <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+        @canany(['allocation.view', 'document.view'])
+            <div>
+                <p class="px-3 mb-1 text-[11px] font-semibold uppercase tracking-wider text-indigo-300/70">{{ __('Kegiatan') }}</p>
+                <div class="space-y-0.5">
+                    @can('allocation.view')
+                        <a href="{{ route('allocations.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md {{ request()->routeIs('allocations.*') ? 'bg-white/10 text-white font-medium' : 'text-indigo-100/80 hover:bg-white/5 hover:text-white' }}">
+                            {{ __('Alokasi Kegiatan') }}
+                        </a>
+                    @endcan
+                    @can('document.view')
+                        <a href="{{ route('documents.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md {{ request()->routeIs('documents.*') || request()->routeIs('document_manifests.*') || request()->routeIs('document_transfers.*') || request()->routeIs('document_processing_assignments.*') ? 'bg-white/10 text-white font-medium' : 'text-indigo-100/80 hover:bg-white/5 hover:text-white' }}">
+                            {{ __('Dokumen') }}
+                        </a>
+                    @endcan
+                </div>
             </div>
+        @endcanany
+    </nav>
+
+    <div class="border-t border-white/10 p-3 shrink-0" x-data="{ userOpen: false }">
+        <button @click="userOpen = ! userOpen" class="w-full flex items-center gap-2 px-3 py-2 rounded-md text-indigo-100/80 hover:bg-white/5 hover:text-white text-sm">
+            <span class="truncate">{{ Auth::user()->name }}</span>
+            <svg class="h-4 w-4 ms-auto shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+        </button>
+        <div x-show="userOpen" class="mt-1 space-y-0.5 text-sm" style="display: none;">
+            @can('profile.manage')
+                <a href="{{ route('profile.edit') }}" class="block px-3 py-2 rounded-md text-indigo-100/80 hover:bg-white/5 hover:text-white">
+                    {{ __('Profile') }}
+                </a>
+            @endcan
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <a href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();" class="block px-3 py-2 rounded-md text-indigo-100/80 hover:bg-white/5 hover:text-white">
+                    {{ __('Log Out') }}
+                </a>
+            </form>
         </div>
     </div>
-
-    <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
-            @can('admin.user.manage')
-                <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
-                    {{ __('Pengguna') }}
-                </x-responsive-nav-link>
-            @endcan
-            @can('admin.role.manage')
-                <x-responsive-nav-link :href="route('admin.roles.index')" :active="request()->routeIs('admin.roles.*')">
-                    {{ __('Role') }}
-                </x-responsive-nav-link>
-            @endcan
-            @can('master.survey_type.view')
-                <x-responsive-nav-link :href="route('master.jenis-survei.index')" :active="request()->routeIs('master.jenis-survei.*')">
-                    {{ __('Jenis Survei') }}
-                </x-responsive-nav-link>
-            @endcan
-            @can('master.work_unit.view')
-                <x-responsive-nav-link :href="route('master.unit-kerja.index')" :active="request()->routeIs('master.unit-kerja.*')">
-                    {{ __('Unit Kerja') }}
-                </x-responsive-nav-link>
-            @endcan
-            @can('master.survey_period.view')
-                <x-responsive-nav-link :href="route('master.survey_periods.index')" :active="request()->routeIs('master.survey_periods.*')">
-                    {{ __('Periode Survei') }}
-                </x-responsive-nav-link>
-            @endcan
-            @can('master.officer.view')
-                <x-responsive-nav-link :href="route('master.officers.index')" :active="request()->routeIs('master.officers.*')">
-                    {{ __('Master Petugas') }}
-                </x-responsive-nav-link>
-            @endcan
-            @can('allocation.view')
-                <x-responsive-nav-link :href="route('allocations.index')" :active="request()->routeIs('allocations.*')">
-                    {{ __('Alokasi Kegiatan') }}
-                </x-responsive-nav-link>
-            @endcan
-            @can('audit.view')
-                <x-responsive-nav-link :href="route('audit_logs.index')" :active="request()->routeIs('audit_logs.*')">
-                    {{ __('Audit Trail') }}
-                </x-responsive-nav-link>
-            @endcan
-            @can('master.region.view')
-                <x-responsive-nav-link :href="route('master.wilayah.index')" :active="request()->routeIs('master.wilayah.*')">
-                    {{ __('Master Wilayah') }}
-                </x-responsive-nav-link>
-            @endcan
-        </div>
-
-        <!-- Responsive Settings Options -->
-        <div class="pt-4 pb-1 border-t border-gray-200">
-            <div class="px-4">
-                <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
-            </div>
-
-            <div class="mt-3 space-y-1">
-                @can('profile.manage')
-                    <x-responsive-nav-link :href="route('profile.edit')">
-                        {{ __('Profile') }}
-                    </x-responsive-nav-link>
-                @endcan
-
-                <!-- Authentication -->
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-
-                    <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                        {{ __('Log Out') }}
-                    </x-responsive-nav-link>
-                </form>
-            </div>
-        </div>
-    </div>
-</nav>
+</aside>

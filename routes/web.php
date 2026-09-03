@@ -5,6 +5,12 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Master\AllocationController;
 use App\Http\Controllers\Master\AssignmentController;
+use App\Http\Controllers\Master\DocumentController;
+use App\Http\Controllers\Master\DocumentLocationController;
+use App\Http\Controllers\Master\DocumentManifestController;
+use App\Http\Controllers\Master\DocumentProcessingAssignmentController;
+use App\Http\Controllers\Master\DocumentTransferController;
+use App\Http\Controllers\Master\DocumentTypeController;
 use App\Http\Controllers\Master\DsrtSampleController;
 use App\Http\Controllers\Master\OfficerAliasController;
 use App\Http\Controllers\Master\OfficerController;
@@ -13,6 +19,12 @@ use App\Http\Controllers\Master\SurveyPeriodController;
 use App\Http\Controllers\Master\SurveyTypeController;
 use App\Http\Controllers\Master\WorkUnitController;
 use App\Http\Controllers\ProfileController;
+use App\Models\Allocation;
+use App\Models\Document;
+use App\Models\DocumentManifest;
+use App\Models\Officer;
+use App\Models\SurveyPeriod;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -20,7 +32,18 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $user = request()->user();
+
+    return view('dashboard', [
+        'stats' => [
+            'users' => $user->can('admin.user.manage') ? User::query()->count() : null,
+            'officers' => $user->can('master.officer.view') ? Officer::query()->where('status', 'ACTIVE')->count() : null,
+            'allocations' => $user->can('allocation.view') ? Allocation::query()->where('status', 'ACTIVE')->count() : null,
+            'documents' => $user->can('document.view') ? Document::query()->whereIn('status', ['REGISTERED', 'IN_TRANSIT'])->count() : null,
+            'periods' => $user->can('master.survey_period.view') ? SurveyPeriod::query()->where('status', 'ACTIVE')->count() : null,
+            'manifests' => $user->can('document.view') ? DocumentManifest::query()->where('status', 'SUBMITTED')->count() : null,
+        ],
+    ]);
 })->middleware(['auth', 'verified', 'permission:dashboard.view'])->name('dashboard');
 
 Route::middleware(['auth', 'permission:profile.manage'])->group(function () {
@@ -142,6 +165,66 @@ Route::middleware(['auth', 'permission:dsrt.manage'])->prefix('alokasi/{allocati
 Route::middleware(['auth', 'permission:dsrt.view'])->prefix('alokasi/{allocation}/dsrt')->name('allocations.dsrt.')->group(function () {
     Route::get('/', [DsrtSampleController::class, 'index'])->name('index');
     Route::get('{dsrtSample}', [DsrtSampleController::class, 'show'])->name('show');
+});
+
+Route::middleware(['auth', 'permission:document.manage'])->prefix('dokumen')->name('documents.')->group(function () {
+    Route::get('create', [DocumentController::class, 'create'])->name('create');
+    Route::post('/', [DocumentController::class, 'store'])->name('store');
+    Route::get('{document}/edit', [DocumentController::class, 'edit'])->name('edit');
+    Route::match(['put', 'patch'], '{document}', [DocumentController::class, 'update'])->name('update');
+});
+
+Route::middleware(['auth', 'permission:document.manage'])->prefix('dokumen')->name('document_types.')->group(function () {
+    Route::get('jenis/create', [DocumentTypeController::class, 'create'])->name('create');
+    Route::post('jenis', [DocumentTypeController::class, 'store'])->name('store');
+    Route::get('jenis/{documentType}/edit', [DocumentTypeController::class, 'edit'])->name('edit');
+    Route::match(['put', 'patch'], 'jenis/{documentType}', [DocumentTypeController::class, 'update'])->name('update');
+});
+
+Route::middleware(['auth', 'permission:document.manage'])->prefix('dokumen')->name('document_locations.')->group(function () {
+    Route::get('lokasi/create', [DocumentLocationController::class, 'create'])->name('create');
+    Route::post('lokasi', [DocumentLocationController::class, 'store'])->name('store');
+    Route::get('lokasi/{documentLocation}/edit', [DocumentLocationController::class, 'edit'])->name('edit');
+    Route::match(['put', 'patch'], 'lokasi/{documentLocation}', [DocumentLocationController::class, 'update'])->name('update');
+});
+
+Route::middleware(['auth', 'permission:document.manage'])->prefix('manifest')->name('document_manifests.')->group(function () {
+    Route::get('create', [DocumentManifestController::class, 'create'])->name('create');
+    Route::post('/', [DocumentManifestController::class, 'store'])->name('store');
+    Route::get('{documentManifest}/edit', [DocumentManifestController::class, 'edit'])->name('edit');
+    Route::match(['put', 'patch'], '{documentManifest}', [DocumentManifestController::class, 'update'])->name('update');
+    Route::post('{documentManifest}/item', [DocumentManifestController::class, 'storeItem'])->name('items.store');
+    Route::post('{documentManifest}/submit', [DocumentManifestController::class, 'submit'])->name('submit');
+});
+
+Route::middleware(['auth', 'permission:document.assign'])->prefix('dokumen')->name('document_processing_assignments.')->group(function () {
+    Route::get('{document}/penugasan', [DocumentProcessingAssignmentController::class, 'index'])->name('index');
+    Route::get('{document}/penugasan/create', [DocumentProcessingAssignmentController::class, 'create'])->name('create');
+    Route::post('{document}/penugasan', [DocumentProcessingAssignmentController::class, 'store'])->name('store');
+});
+
+Route::middleware(['auth', 'permission:document.view'])->prefix('dokumen')->name('document_types.')->group(function () {
+    Route::get('jenis', [DocumentTypeController::class, 'index'])->name('index');
+});
+
+Route::middleware(['auth', 'permission:document.view'])->prefix('dokumen')->name('document_locations.')->group(function () {
+    Route::get('lokasi', [DocumentLocationController::class, 'index'])->name('index');
+});
+
+Route::middleware(['auth', 'permission:document.view'])->prefix('dokumen')->name('documents.')->group(function () {
+    Route::get('/', [DocumentController::class, 'index'])->name('index');
+    Route::get('{document}', [DocumentController::class, 'show'])->name('show');
+});
+
+Route::middleware(['auth', 'permission:document.view'])->prefix('manifest')->name('document_manifests.')->group(function () {
+    Route::get('/', [DocumentManifestController::class, 'index'])->name('index');
+    Route::get('{documentManifest}', [DocumentManifestController::class, 'show'])->name('show');
+});
+
+Route::middleware(['auth', 'permission:document.receive'])->prefix('manifest/{documentManifest}/serah-terima')->name('document_transfers.')->group(function () {
+    Route::get('/', [DocumentTransferController::class, 'show'])->name('show');
+    Route::get('periksa', [DocumentTransferController::class, 'edit'])->name('edit');
+    Route::match(['put', 'patch'], '/', [DocumentTransferController::class, 'update'])->name('update');
 });
 
 require __DIR__.'/auth.php';
