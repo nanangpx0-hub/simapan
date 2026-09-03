@@ -66,22 +66,30 @@ Detail teknis di `docs/architecture.md`.
 
 - Login/logout session, CSRF, proteksi brute-force dasar (throttle).
 - Semua halaman selain login wajib auth.
+- Halaman `/profile` wajib auth + permission `profile.manage` (guest → login, tanpa permission → 403).
 - Kriteria: login salah ditolak tanpa bocor info user; sesi kedaluwarsa mengarah ke login.
 
 ### F2 Role dan Permission
 
-- CRUD role/permission oleh Administrator via Spatie.
-- Permission granular per master, misal `master.petugas.view`, `master.petugas.manage`.
+- Role sistem-terkelola read-only di UI Fase 1A; perubahan role/permission sistem hanya via seeder dan kode.
+- Administrator memberi/mencabut role pengguna lain (bukan dirinya sendiri) via Spatie.
+- Permission granular per master, misal `master.officer.view`, `master.officer.manage`.
 - Kriteria: user tanpa permission mendapat 403 dan tidak melihat menu terkait.
 
 ### F3 Unit Kerja
 
 - CRUD unit: kode unik, nama, parent opsional, aktif/nonaktif.
+- Fase 1B-1: tanpa delete fisik via UI (nonaktifkan sebagai default); larang self-parent/siklus; parent nonaktif tidak untuk child baru.
 - Hapus unit beranak/dipakai petugas ditolak (restrict).
 - Kriteria: kode duplikat ditolak; hierarki terbaca sebagai tree.
 
 ### F4 Master Tipe dan Periode Survei
 
+- Fase 1B-3 terimplementasi: status `DRAFT/ACTIVE/CLOSED/ARCHIVED` dengan
+  action (`activate/close/archive` via POST); `code`/tipe/nomor/tahun immutable;
+  `closed_by`/`closed_at` server-side; tanpa delete UI; tanpa reopen;
+  seeder dummy `SUSENAS-S1-2099`, `SERUTI-T1-2099` (keduanya `DRAFT`).
+  Detail di `docs/database.md`.
 - `survey_types`: kode string unik, nama (misal Susenas, Seruti dummy).
 - `survey_periods` field: `survey_type_id` FK, kode string unik, nama, `year`, `period_type`, `period_number`, tanggal mulai/selesai, status `draft/active/closed`, pembuat.
 - Semua kode adalah string di DB, validasi, dan payload.
@@ -90,6 +98,12 @@ Detail teknis di `docs/architecture.md`.
 
 ### F5 Master Wilayah
 
+- Fase 1B-2 terimplementasi: 4 level generik (`PROVINSI` → `KAB_KOTA` →
+  `KECAMATAN` → `DESA_KELURAHAN_NAGARI`), `full_code` server-side unique,
+  tanpa delete fisik UI, seeder dummy (`99` → `9901` → `9901001` → `9901001001`).
+  SLS/Sub-SLS menyusul fase alokasi. Detail di `docs/database.md`.
+
+- Desain lanjutan (level kab/kec/desa dan SLS menyusul fase alokasi):
 - Field: `code` string (bukan unique global), `full_code` string unique, nama, level (`kab/kec/desa`), parent, aktif.
 - Keunikan: `full_code UNIQUE` dan kombinasi `parent_id + level + code` UNIQUE.
 - Aturan: `desa` wajib berparent `kec`, `kec` wajib berparent `kab`.
@@ -98,6 +112,9 @@ Detail teknis di `docs/architecture.md`.
 
 ### F6 Master Petugas
 
+- Fase 1B-4 terimplementasi: status `ACTIVE/INACTIVE`, tanggal aktif,
+  phone/email sensitif (masking), user opsional satu officer,
+  tanpa delete UI (soft delete proteksi internal). Detail di `docs/database.md`.
 - Field: kode petugas string unik dan immutable, nama, `normalized_name`, unit kerja, user opsional, status; memakai `softDeletes`.
 - Tidak ada `application_role_id`; role teknis di `users` via Spatie.
 - Semua kode petugas string; dilarang cast ke integer.
@@ -105,11 +122,18 @@ Detail teknis di `docs/architecture.md`.
 
 ### F7 Alias Nama Petugas
 
+- Fase 1B-4 terimplementasi: alias boleh dipakai petugas lain (warning),
+  alias ≠ nama utama sendiri, `created_by` dari user login, tanpa delete UI.
 - Satu petugas boleh punya banyak alias (nama varian dari file eksternal).
 - Unik per `(officer_id, normalized_alias)`; hapus petugas menghapus alias (cascade).
 - Kriteria: pencarian nama varian menemukan petugas induk.
 
 ### F8 Audit Trail Inti
+
+- Fase 1B-5 terimplementasi: `AuditLogger` satu pintu, `AuditSanitizer`
+  (`[REDACTED]`), trait `Auditable` + observer, listener auth, halaman
+  read-only `/audit-logs` (perlu `audit.view`); seeder tidak diaudit.
+  Detail di `docs/database.md`.
 
 - Setiap create/update/delete master, login, dan perubahan role tercatat.
 - Isi: actor, action, tipe+id objek, old/new values, IP, user agent, waktu.

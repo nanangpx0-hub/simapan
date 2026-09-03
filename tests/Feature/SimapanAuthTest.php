@@ -3,6 +3,15 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use Database\Seeders\PermissionSeeder;
+use Database\Seeders\RoleSeeder;
+
+beforeEach(function (): void {
+    $this->seed([
+        PermissionSeeder::class,
+        RoleSeeder::class,
+    ]);
+});
 
 test('halaman login dapat dibuka', function (): void {
     $response = $this->get('/login');
@@ -30,6 +39,7 @@ test('dashboard mengharuskan autentikasi', function (): void {
 
 test('dashboard tampil untuk user login', function (): void {
     $user = User::factory()->create();
+    $user->assignRole('viewer');
 
     $response = $this->actingAs($user)->get('/dashboard');
 

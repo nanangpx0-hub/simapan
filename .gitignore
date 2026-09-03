@@ -7,6 +7,8 @@
 /storage/pail
 /vendor
 .env
+.env.*
+!.env.example
 .env.backup
 .env.production
 /storage/logs/*
@@ -14,6 +16,7 @@
 /storage/framework/sessions/*
 /storage/framework/views/*
 /storage/app/private/*
+/storage/app/public/*
 /data/*
 /uploads/*
 .phpactor.json
@@ -22,6 +25,8 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
+.DS_Store
+Thumbs.db
 /auth.json
 /.fleet
 /.idea

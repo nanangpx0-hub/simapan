@@ -15,6 +15,51 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    @can('admin.user.manage')
+                        <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                            {{ __('Pengguna') }}
+                        </x-nav-link>
+                    @endcan
+                    @can('admin.role.manage')
+                        <x-nav-link :href="route('admin.roles.index')" :active="request()->routeIs('admin.roles.*')">
+                            {{ __('Role') }}
+                        </x-nav-link>
+                    @endcan
+                    @can('master.survey_type.view')
+                        <x-nav-link :href="route('master.jenis-survei.index')" :active="request()->routeIs('master.jenis-survei.*')">
+                            {{ __('Jenis Survei') }}
+                        </x-nav-link>
+                    @endcan
+                    @can('master.work_unit.view')
+                        <x-nav-link :href="route('master.unit-kerja.index')" :active="request()->routeIs('master.unit-kerja.*')">
+                            {{ __('Unit Kerja') }}
+                        </x-nav-link>
+                    @endcan
+                    @can('master.survey_period.view')
+                        <x-nav-link :href="route('master.survey_periods.index')" :active="request()->routeIs('master.survey_periods.*')">
+                            {{ __('Periode Survei') }}
+                        </x-nav-link>
+                    @endcan
+                    @can('master.officer.view')
+                        <x-nav-link :href="route('master.officers.index')" :active="request()->routeIs('master.officers.*')">
+                            {{ __('Master Petugas') }}
+                        </x-nav-link>
+                    @endcan
+                    @can('allocation.view')
+                        <x-nav-link :href="route('allocations.index')" :active="request()->routeIs('allocations.*')">
+                            {{ __('Alokasi Kegiatan') }}
+                        </x-nav-link>
+                    @endcan
+                    @can('audit.view')
+                        <x-nav-link :href="route('audit_logs.index')" :active="request()->routeIs('audit_logs.*')">
+                            {{ __('Audit Trail') }}
+                        </x-nav-link>
+                    @endcan
+                    @can('master.region.view')
+                        <x-nav-link :href="route('master.wilayah.index')" :active="request()->routeIs('master.wilayah.*')">
+                            {{ __('Master Wilayah') }}
+                        </x-nav-link>
+                    @endcan
                 </div>
             </div>
 
@@ -34,9 +79,11 @@
                     </x-slot>
 
                     <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
-                        </x-dropdown-link>
+                        @can('profile.manage')
+                            <x-dropdown-link :href="route('profile.edit')">
+                                {{ __('Profile') }}
+                            </x-dropdown-link>
+                        @endcan
 
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}">
@@ -70,6 +117,51 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            @can('admin.user.manage')
+                <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                    {{ __('Pengguna') }}
+                </x-responsive-nav-link>
+            @endcan
+            @can('admin.role.manage')
+                <x-responsive-nav-link :href="route('admin.roles.index')" :active="request()->routeIs('admin.roles.*')">
+                    {{ __('Role') }}
+                </x-responsive-nav-link>
+            @endcan
+            @can('master.survey_type.view')
+                <x-responsive-nav-link :href="route('master.jenis-survei.index')" :active="request()->routeIs('master.jenis-survei.*')">
+                    {{ __('Jenis Survei') }}
+                </x-responsive-nav-link>
+            @endcan
+            @can('master.work_unit.view')
+                <x-responsive-nav-link :href="route('master.unit-kerja.index')" :active="request()->routeIs('master.unit-kerja.*')">
+                    {{ __('Unit Kerja') }}
+                </x-responsive-nav-link>
+            @endcan
+            @can('master.survey_period.view')
+                <x-responsive-nav-link :href="route('master.survey_periods.index')" :active="request()->routeIs('master.survey_periods.*')">
+                    {{ __('Periode Survei') }}
+                </x-responsive-nav-link>
+            @endcan
+            @can('master.officer.view')
+                <x-responsive-nav-link :href="route('master.officers.index')" :active="request()->routeIs('master.officers.*')">
+                    {{ __('Master Petugas') }}
+                </x-responsive-nav-link>
+            @endcan
+            @can('allocation.view')
+                <x-responsive-nav-link :href="route('allocations.index')" :active="request()->routeIs('allocations.*')">
+                    {{ __('Alokasi Kegiatan') }}
+                </x-responsive-nav-link>
+            @endcan
+            @can('audit.view')
+                <x-responsive-nav-link :href="route('audit_logs.index')" :active="request()->routeIs('audit_logs.*')">
+                    {{ __('Audit Trail') }}
+                </x-responsive-nav-link>
+            @endcan
+            @can('master.region.view')
+                <x-responsive-nav-link :href="route('master.wilayah.index')" :active="request()->routeIs('master.wilayah.*')">
+                    {{ __('Master Wilayah') }}
+                </x-responsive-nav-link>
+            @endcan
         </div>
 
         <!-- Responsive Settings Options -->
@@ -80,9 +172,11 @@
             </div>
 
             <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
-                </x-responsive-nav-link>
+                @can('profile.manage')
+                    <x-responsive-nav-link :href="route('profile.edit')">
+                        {{ __('Profile') }}
+                    </x-responsive-nav-link>
+                @endcan
 
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">
