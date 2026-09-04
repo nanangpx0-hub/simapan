@@ -36,3 +36,7 @@ Thumbs.db
 
 # Playwright E2E artifacts (laporan & screenshot)
 /tests/e2e/artifacts
+
+# Migrasi PC: dump SQL & error log (skrip + README tetap ter-commit)
+/migrate/*.sql
+/migrate/*.err
