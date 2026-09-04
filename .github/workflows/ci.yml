@@ -1,0 +1,126 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pest:
+    name: Pest (backend)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo_sqlite, pdo_mysql, intl, zip
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Run Pest suite
+        run: php artisan test
+
+  e2e:
+    name: E2E Playwright (semua peran)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo_sqlite, pdo_mysql, intl, zip
+          coverage: none
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          composer install --prefer-dist --no-interaction --no-progress
+          npm ci
+          npm run build
+
+      - name: Siapkan .env CI (sqlite)
+        run: |
+          cat > .env <<'EOF'
+          APP_NAME=SIMAPAN
+          APP_ENV=local
+          APP_KEY=
+          APP_DEBUG=true
+          APP_URL=http://127.0.0.1:8000
+          APP_LOCALE=en
+          APP_FALLBACK_LOCALE=en
+          APP_FAKER_LOCALE=en_US
+
+          DB_CONNECTION=sqlite
+          DB_DATABASE=database/database.sqlite
+
+          SESSION_DRIVER=database
+          SESSION_LIFETIME=120
+
+          CACHE_STORE=database
+          QUEUE_CONNECTION=database
+          BROADCAST_CONNECTION=log
+          FILESYSTEM_DISK=local
+          MAIL_MAILER=log
+          LOG_CHANNEL=stack
+          LOG_STACK=single
+
+          SIMAPAN_ADMIN_NAME="SIMAPAN Administrator"
+          SIMAPAN_ADMIN_EMAIL=admin@simapan.test
+          SIMAPAN_ADMIN_PASSWORD=ci-admin-password-2026
+          EOF
+          php artisan key:generate
+
+      - name: Migrasi + seed dummy
+        run: |
+          touch database/database.sqlite
+          php artisan migrate --force
+          php artisan db:seed --force
+
+      - name: Install browser Playwright
+        run: npx playwright install chromium
+
+      - name: Jalankan server
+        run: |
+          php artisan serve --host=127.0.0.1 --port=8000 &
+          sleep 4
+          curl -fsS -o /dev/null http://127.0.0.1:8000/login
+
+      - name: Smoke test semua peran
+        run: node tests/e2e/smoke-roles.cjs
+        env:
+          E2E_BASE_URL: http://127.0.0.1:8000
+          SIMAPAN_ADMIN_EMAIL: admin@simapan.test
+          SIMAPAN_ADMIN_PASSWORD: ci-admin-password-2026
+
+      - name: Workflow administrator (manifest + serah terima)
+        run: node tests/e2e/workflow-admin.cjs
+        env:
+          E2E_BASE_URL: http://127.0.0.1:8000
+          SIMAPAN_ADMIN_EMAIL: admin@simapan.test
+          SIMAPAN_ADMIN_PASSWORD: ci-admin-password-2026
+
+      - name: Workflow PML (isi + verifikasi DSRT)
+        run: node tests/e2e/workflow-pml-dsrt.cjs
+        env:
+          E2E_BASE_URL: http://127.0.0.1:8000
+
+      - name: Unggah artefak E2E
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-artifacts
+          path: tests/e2e/artifacts/
+          retention-days: 7
+          if-no-files-found: ignore
