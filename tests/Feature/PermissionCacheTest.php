@@ -41,5 +41,5 @@ test('permission baru efektif setelah cache reset', function (): void {
 test('registrar cache reset tidak merusak resolusi permission', function (): void {
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-    expect(Permission::where('guard_name', 'web')->count())->toBe(21);
+    expect(Permission::where('guard_name', 'web')->count())->toBe(25);
 });

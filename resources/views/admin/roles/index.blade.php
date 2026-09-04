@@ -10,7 +10,8 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <p class="mb-4 text-sm text-gray-600">{{ __('Role bersifat sistem-terkelola. Perubahan hanya melalui seeder dan kode.') }}</p>
-                    <table class="w-full text-sm text-left">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
                         <thead>
                             <tr class="border-b">
                                 <th class="py-2">{{ __('Nama') }}</th>
@@ -29,7 +30,8 @@
                                 </tr>
                             @endforeach
                         </tbody>
-                    </table>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

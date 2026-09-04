@@ -13,7 +13,8 @@
                         <p>{{ __('Daftar unit kerja.') }}</p>
                         <a href="{{ route('master.unit-kerja.create') }}" class="underline">{{ __('Tambah unit kerja') }}</a>
                     </div>
-                    <table class="w-full text-sm text-left">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
                         <thead>
                             <tr class="border-b">
                                 <th class="py-2">{{ __('Kode') }}</th>
@@ -38,7 +39,8 @@
                                 </tr>
                             @endforeach
                         </tbody>
-                    </table>
+                        </table>
+                    </div>
                     <div class="mt-4">{{ $units->links() }}</div>
                 </div>
             </div>

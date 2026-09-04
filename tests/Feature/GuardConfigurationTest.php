@@ -22,7 +22,7 @@ test('semua role memakai guard web', function (): void {
 
 test('semua permission memakai guard web', function (): void {
     expect(Permission::where('guard_name', '!=', 'web')->count())->toBe(0);
-    expect(Permission::where('guard_name', 'web')->count())->toBe(21);
+    expect(Permission::where('guard_name', 'web')->count())->toBe(25);
 });
 
 test('konfigurasi teams bernilai false', function (): void {

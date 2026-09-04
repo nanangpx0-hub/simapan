@@ -13,7 +13,8 @@
                         <p>{{ __('Daftar pengguna SIMAPAN.') }}</p>
                         <a href="{{ route('admin.users.create') }}" class="underline">{{ __('Tambah pengguna') }}</a>
                     </div>
-                    <table class="w-full text-sm text-left">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
                         <thead>
                             <tr class="border-b">
                                 <th class="py-2">{{ __('Nama') }}</th>
@@ -38,7 +39,8 @@
                                 </tr>
                             @endforeach
                         </tbody>
-                    </table>
+                        </table>
+                    </div>
                     <div class="mt-4">{{ $users->links() }}</div>
                 </div>
             </div>

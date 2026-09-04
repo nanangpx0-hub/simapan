@@ -34,7 +34,8 @@
                         <input name="event_uuid" type="text" value="{{ $filters['event_uuid'] ?? '' }}" placeholder="{{ __('Event UUID') }}" class="border rounded px-2 py-1" />
                         <button type="submit" class="underline">{{ __('Filter') }}</button>
                     </form>
-                    <table class="w-full text-sm text-left">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
                         <thead>
                             <tr class="border-b">
                                 <th class="py-2">{{ __('Waktu') }}</th>
@@ -61,7 +62,8 @@
                                 </tr>
                             @endforeach
                         </tbody>
-                    </table>
+                        </table>
+                    </div>
                     <div class="mt-4">{{ $logs->links() }}</div>
                 </div>
             </div>

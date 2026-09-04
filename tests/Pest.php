@@ -1,9 +1,12 @@
 <?php
 
 use App\Models\Allocation;
+use App\Models\Document;
+use App\Models\DocumentType;
 use App\Models\Region;
 use App\Models\SurveyPeriod;
 use App\Models\User;
+use App\Models\WorkUnit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -89,4 +92,55 @@ function alokasiSerutiUji(User $admin, string $nks = 'NKS-DSRT-SERUTI'): Allocat
         'status' => 'DRAFT',
         'created_by' => $admin->getKey(),
     ]);
+}
+
+function adminDokumenUji(): User
+{
+    $admin = User::factory()->create();
+    $admin->assignRole('administrator');
+
+    return $admin;
+}
+
+function dokumenSiapUji(User $admin, Allocation $alokasi, string $title = 'Berkas Uji'): Document
+{
+    $type = DocumentType::firstOrCreate(
+        ['code' => 'JDOC-UJI'],
+        ['name' => 'Jenis Uji', 'is_active' => true]
+    );
+    $sosial = WorkUnit::where('code', 'SOSIAL')->firstOrFail();
+
+    $document = Document::create([
+        'document_type_id' => $type->getKey(),
+        'allocation_id' => $alokasi->getKey(),
+        'dsrt_sample_id' => null,
+        'title' => $title,
+        'format' => 'PHYSICAL',
+        'quantity' => 1,
+        'status' => 'REGISTERED',
+        'created_by' => $admin->getKey(),
+    ]);
+
+    $document->holder()->create([
+        'holder_type' => 'WORK_UNIT',
+        'work_unit_id' => $sosial->getKey(),
+        'officer_id' => null,
+        'document_location_id' => null,
+        'condition_code' => 'GOOD',
+        'assigned_by' => $admin->getKey(),
+        'assigned_at' => now(),
+    ]);
+
+    $document->holderHistories()->create([
+        'to_holder_type' => 'WORK_UNIT',
+        'to_work_unit_id' => $sosial->getKey(),
+        'condition_after' => 'GOOD',
+        'movement_type' => 'REGISTERED',
+        'reference_type' => Document::class,
+        'reference_id' => $document->getKey(),
+        'moved_by' => $admin->getKey(),
+        'moved_at' => now(),
+    ]);
+
+    return $document->refresh();
 }

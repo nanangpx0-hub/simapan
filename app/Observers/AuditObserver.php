@@ -6,6 +6,10 @@ namespace App\Observers;
 
 use App\Models\Allocation;
 use App\Models\Assignment;
+use App\Models\Document;
+use App\Models\DocumentManifest;
+use App\Models\DocumentProcessingAssignment;
+use App\Models\DocumentTransfer;
 use App\Models\DsrtSample;
 use App\Models\Officer;
 use App\Models\Region;
@@ -25,7 +29,11 @@ class AuditObserver
 
         $changes = $this->diff($model, [], $model->getAttributes());
 
-        $action = $model instanceof Assignment ? 'assigned' : 'created';
+        $action = 'created';
+
+        if ($model instanceof Assignment || $model instanceof DocumentProcessingAssignment) {
+            $action = 'assigned';
+        }
 
         AuditLogger::log($action, $model, $changes['old'], $changes['new']);
     }
@@ -164,6 +172,27 @@ class AuditObserver
         if ($model instanceof DsrtSample) {
             $keys = array_unique(array_merge(array_keys($old), array_keys($new)));
             $nonStatus = array_diff($keys, ['record_status', 'verified_by', 'verified_at', 'archived_by', 'archived_at']);
+
+            return $nonStatus === [] ? null : 'updated';
+        }
+
+        if ($model instanceof Document) {
+            $keys = array_unique(array_merge(array_keys($old), array_keys($new)));
+            $nonStatus = array_diff($keys, ['status']);
+
+            return $nonStatus === [] ? null : 'updated';
+        }
+
+        if ($model instanceof DocumentManifest) {
+            $keys = array_unique(array_merge(array_keys($old), array_keys($new)));
+            $nonStatus = array_diff($keys, ['status', 'submitted_by', 'submitted_at', 'received_by', 'received_at']);
+
+            return $nonStatus === [] ? null : 'updated';
+        }
+
+        if ($model instanceof DocumentTransfer) {
+            $keys = array_unique(array_merge(array_keys($old), array_keys($new)));
+            $nonStatus = array_diff($keys, ['transfer_status', 'received_by', 'received_at', 'checked_by', 'checked_at', 'receipt_result', 'receipt_note']);
 
             return $nonStatus === [] ? null : 'updated';
         }

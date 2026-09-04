@@ -7,8 +7,9 @@
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 @if (! is_null($stats['users'] ?? null))
+                    @can('admin.user.manage')
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-l-4 border-indigo-600">
                         <div class="p-5">
                             <p class="text-sm font-medium text-gray-500">{{ __('Pengguna') }}</p>
@@ -16,6 +17,7 @@
                             <a href="{{ route('admin.users.index') }}" class="mt-2 inline-block text-sm text-indigo-600 hover:text-indigo-800">{{ __('Kelola →') }}</a>
                         </div>
                     </div>
+                    @endcan
                 @endif
                 @if (! is_null($stats['officers'] ?? null))
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-l-4 border-emerald-500">

@@ -28,7 +28,8 @@
                         <input name="q" type="text" value="{{ $filters['q'] ?? '' }}" placeholder="{{ __('Cari kode/nama/alias') }}" class="border rounded px-2 py-1" />
                         <button type="submit" class="underline">{{ __('Filter') }}</button>
                     </form>
-                    <table class="w-full text-sm text-left">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
                         <thead>
                             <tr class="border-b">
                                 <th class="py-2">{{ __('Kode') }}</th>
@@ -67,7 +68,8 @@
                                 </tr>
                             @endforeach
                         </tbody>
-                    </table>
+                        </table>
+                    </div>
                     <div class="mt-4">{{ $officers->links() }}</div>
                 </div>
             </div>
