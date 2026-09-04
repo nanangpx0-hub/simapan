@@ -36,7 +36,7 @@ Belum ada peminjaman/temuan/impor/finalisasi (tanpa Livewire, upload, Excel).
 4. `php artisan key:generate`
 5. Pastikan database aktif adalah `simapan_db`, lalu `php artisan migrate` (jangan `migrate:fresh` bila bukan `simapan_db`).
 6. `npm install && npm run build`
-7. `php artisan test` dan `./vendor/bin/pint --test`
+7. `php artisan test`, `./vendor/bin/pint --test`, dan (opsional) E2E Playwright sesuai `docs/e2e-testing.md`
 8. Jalankan: via Laragon (VirtualHost ke `public/`) atau `php artisan serve`, lalu buka `/login` dan `/dashboard`.
 
 ## Dokumen
@@ -48,6 +48,8 @@ Belum ada peminjaman/temuan/impor/finalisasi (tanpa Livewire, upload, Excel).
 - `docs/workflows.md` — alur kerja dan commit kecil
 - `docs/coding-standards.md` — PSR-12, strict types, konvensi
 - `docs/data-classification.md` — klasifikasi data dan larangan data asli
+- `docs/e2e-testing.md` — pengujian UI end-to-end Playwright (browser remote) per peran
+- `docs/maintenance-log.md` — log perubahan kode hasil analisa/pemeliharaan
 
 ## Role
 
