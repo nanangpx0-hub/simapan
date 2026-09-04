@@ -33,3 +33,6 @@ Thumbs.db
 /.nova
 /.vscode
 /.zed
+
+# Playwright E2E artifacts (laporan & screenshot)
+/tests/e2e/artifacts
