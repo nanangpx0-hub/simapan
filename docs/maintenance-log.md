@@ -3,6 +3,23 @@
 Catatan perubahan kode hasil sesi analisa dan pengujian menyeluruh.
 Format: tanggal — berkas — alasan/temuan. Urutan terbaru di atas.
 
+## 2026-09-04 (impor) — Integrasi data Alokasi.xlsx
+
+1. `app/Support/XlsxReader.php` (baru) — pembaca XLSX mandiri (ZipArchive +
+   SimpleXML): shared strings, inline strings, boolean, angka, serial date
+   via `styles.xml`; tanpa dependency baru.
+2. `app/Console/Commands/ImportAlokasi.php` (baru) — command `simapan:import-alokasi`
+   yang menesuaikan 7 langkah: validasi struktur, pembersihan, migrasi,
+   transaksi+rollback, verifikasi, logging, guard produzi (`--force`).
+3. Sheet `Rincian` (email/password) dikecualikan karena Data Terlarang;
+   sheet `Daftar alokasi` diimpor (kode wilayah, NKS string dengan leading zero,
+   jumlah RT→notes, penugasan PCL/PML/Pengolah→Assignment, rantai region).
+
+Hasil staging (local): 28 baris valid / 0 error; impor 28 alokasi, 47 region,
+51 petugas, 84 penugasan; verifikasi lulus; rollback otomatis teruji log jalan
+(dari error `Undefined array key "PPL"` yang dirollback-keh sebelum perbaikan).
+Dokumentasi: `docs/import-alokasi.md`.
+
 ## 2026-09-04 (lanjutan) — E2E di CI + alur interaktif PML (DSRT)
 
 1. `tests/e2e/workflow-pml-dsrt.cjs` (baru) — alur interaktif PML:
