@@ -25,6 +25,9 @@ class DocumentProcessingAssignmentController extends Controller
             'document' => $document,
             'active' => $document->processingAssignments()->active()->with(['officer', 'assigner'])->get(),
             'history' => $document->processingAssignments()->with(['officer', 'assigner'])->orderByDesc('id')->paginate(15),
+            'officers' => Officer::query()->active()->with('workUnit')->orderBy('code')->get(),
+            'locations' => DocumentLocation::query()->where('is_active', true)->orderBy('code')->get(),
+            'conditions' => Document::CONDITIONS,
         ]);
     }
 

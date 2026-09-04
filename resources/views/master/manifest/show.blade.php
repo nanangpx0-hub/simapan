@@ -16,7 +16,9 @@
                     </dl>
                     <div class="mt-4 flex gap-4 text-sm">
                         <a href="{{ route('document_manifests.edit', $manifest) }}" class="underline">{{ __('Ubah') }}</a>
-                        <a href="{{ route('document_transfers.show', $manifest) }}" class="underline">{{ __('Serah terima') }}</a>
+                        @if ($manifest->transfer instanceof \App\Models\DocumentTransfer)
+                            <a href="{{ route('document_transfers.show', $manifest) }}" class="underline">{{ __('Serah terima') }}</a>
+                        @endif
                         @if ($manifest->status === 'DRAFT')
                             <form method="POST" action="{{ route('document_manifests.submit', $manifest) }}">
                                 @csrf
