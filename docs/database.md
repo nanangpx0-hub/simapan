@@ -243,6 +243,160 @@ Seeder dummy: `NURT-001/002/003` DRAFT tanpa kontak.
 Unique: `(allocation_id, nus)`, `(allocation_id, nurt)`.
 Index: `(allocation_id, record_status)`, `enumeration_status`, `krt_name`.
 
+### document_types — terimplementasi Fase 2C-1
+
+| Kolom | Tipe | Keterangan |
+|---|---|---|
+| id | BIGINT U PK | |
+| code | VARCHAR(32) UNIQUE | string, immutable |
+| name | VARCHAR(150) | |
+| description | TEXT NULL | |
+| is_active | BOOL default true | |
+| timestamps | | |
+
+Seeder: `KUESIONER`, `DAFTAR_SAMPEL`, `BERITA_ACARA`.
+
+### document_locations — terimplementasi Fase 2C-1
+
+| Kolom | Tipe | Keterangan |
+|---|---|---|
+| id | BIGINT U PK | |
+| code | VARCHAR(32) UNIQUE | string, immutable |
+| name | VARCHAR(150) | |
+| description | TEXT NULL | |
+| is_active | BOOL default true | |
+| timestamps | | |
+
+Seeder: `LEMARI-CONTOH-A1`, `RUANG-ARSIP-CONTOH`.
+
+### documents — terimplementasi Fase 2C-1
+
+| Kolom | Tipe | Keterangan |
+|---|---|---|
+| id | BIGINT U PK | |
+| document_type_id | BIGINT U FK>document_types.restrict | wajib tipe aktif |
+| allocation_id | BIGINT U NULL FK>allocations.restrict | tepat satu dengan dsrt (XOR, FormRequest + CHECK) |
+| dsrt_sample_id | BIGINT U NULL FK>dsrt_samples.restrict | tepat satu dengan allocation (XOR, FormRequest + CHECK) |
+| document_number | VARCHAR(64) NULL | bebas format, tanpa asumsi resmi |
+| title | VARCHAR(255) | wajib |
+| format | VARCHAR(20) | hanya `PHYSICAL` |
+| quantity | INT U default 1 | minimum 1 |
+| status | VARCHAR(30) default `REGISTERED` | alur via action; ubah metadata hanya saat `REGISTERED` |
+| notes | TEXT NULL | |
+| created_by | BIGINT U FK>users.restrict | |
+| timestamps | | |
+
+Tanpa file path/isi/upload/NIK/alamat/kontak/PII. Tanpa delete UI.
+Index: `(allocation_id, status)`, `(dsrt_sample_id, status)`, `document_type_id`, `status`.
+
+### document_manifests — terimplementasi Fase 2C-1
+
+| Kolom | Tipe | Keterangan |
+|---|---|---|
+| id | BIGINT U PK | |
+| manifest_number | VARCHAR(64) UNIQUE | server-side `DM-YYYYMMDD-###`, global per tanggal |
+| from_work_unit_id | BIGINT U FK>work_units.restrict | wajib code `SOSIAL` |
+| to_work_unit_id | BIGINT U FK>work_units.restrict | wajib code `PENGOLAHAN_LS` |
+| status | VARCHAR(30) default `DRAFT` | alur via action; ubah unit hanya saat `DRAFT` |
+| submitted_by | BIGINT U NULL FK>users.nullOnDelete | server-side |
+| submitted_at | DATETIME NULL | server-side |
+| received_by | BIGINT U NULL FK>users.nullOnDelete | server-side |
+| received_at | DATETIME NULL | server-side |
+| created_by | BIGINT U FK>users.restrict | |
+| timestamps | | |
+
+Maks 200 item (validasi aplikasi + test). Index: `status`, `from/to unit`.
+
+### document_manifest_items — terimplementasi Fase 2C-1
+
+| Kolom | Tipe | Keterangan |
+|---|---|---|
+| id | BIGINT U PK | |
+| document_manifest_id | BIGINT U FK>document_manifests.cascade | ikut manifest |
+| document_id | BIGINT U FK>documents.restrict | wajib `REGISTERED` + holder SOSIAL |
+| qty_sent | INT U | minimum 1 |
+| condition_sent | VARCHAR(30) | kondisi awal |
+| sent_note | TEXT NULL | |
+| timestamps | | |
+
+Unique: `(document_manifest_id, document_id)`. Index: `document_id`.
+
+### document_transfers — terimplementasi Fase 2C-1
+
+| Kolom | Tipe | Keterangan |
+|---|---|---|
+| id | BIGINT U PK | |
+| document_manifest_id | BIGINT U UNIQUE FK>document_manifests.restrict | 1 transfer per manifest |
+| transfer_status | VARCHAR(30) default `PENDING` | `PENDING/RECEIVED/REJECTED` |
+| received_by | BIGINT U NULL FK>users.nullOnDelete | server-side |
+| received_at | DATETIME NULL | server-side |
+| checked_by | BIGINT U NULL FK>users.nullOnDelete | server-side (= penerima) |
+| checked_at | DATETIME NULL | server-side |
+| receipt_result | VARCHAR(30) NULL | `COMPLETE/PARTIAL/NOTED/REJECTED` |
+| receipt_note | TEXT NULL | wajib bila manifest REJECTED |
+| created_by | BIGINT U FK>users.restrict | |
+| timestamps | | |
+
+Index: `transfer_status`.
+
+### document_transfer_items — terimplementasi Fase 2C-1
+
+| Kolom | Tipe | Keterangan |
+|---|---|---|
+| id | BIGINT U PK | |
+| document_transfer_id | BIGINT U FK>document_transfers.cascade | ikut transfer |
+| document_manifest_item_id | BIGINT U FK>document_manifest_items.restrict | snapshot qty acuan |
+| qty_sent | INT U | snapshot |
+| qty_received | INT U default 0 | `0 <= qty_received <= qty_sent` (CHECK MySQL) |
+| condition_received | VARCHAR(30) NULL | wajib diisi saat terima |
+| receipt_status | VARCHAR(30) | `COMPLETE/PARTIAL/NOT_RECEIVED/DAMAGED/REJECTED` |
+| receipt_note | TEXT NULL | wajib bila bukan `COMPLETE` |
+| timestamps | | |
+
+Index: `document_transfer_id`, `document_manifest_item_id`.
+
+### document_holders — terimplementasi Fase 2C-1
+
+| Kolom | Tipe | Keterangan |
+|---|---|---|
+| id | BIGINT U PK | |
+| document_id | BIGINT U UNIQUE FK>documents.restrict | satu pemegang aktif |
+| holder_type | VARCHAR(20) | `WORK_UNIT`/`OFFICER` |
+| work_unit_id | BIGINT U NULL FK>work_units.restrict | wajib bila `WORK_UNIT` |
+| officer_id | BIGINT U NULL FK>officers.restrict | wajib bila `OFFICER` |
+| document_location_id | BIGINT U NULL FK>document_locations.restrict | opsional |
+| condition_code | VARCHAR(30) | kondisi terkini |
+| assigned_by | BIGINT U FK>users.restrict | |
+| assigned_at | DATETIME | waktu server |
+| timestamps | | |
+
+Tepat-satu-holder via FormRequest + CHECK MySQL.
+Index: `work_unit_id`, `officer_id`, `document_location_id`.
+
+### document_holder_histories — terimplementasi Fase 2C-1
+
+Append-only (`created_at` saja; tanpa `updated_at`/`deleted_at`; tanpa UI edit/delete):
+`document_id` FK restrict; `from_*` nullable; `to_*` + `condition_after` +
+`movement_type` (`REGISTERED/MANIFEST_SUBMITTED/MANIFEST_RECEIVED/PROCESSING_ASSIGNED`) +
+`reference_type/id` + `moved_by`/`moved_at` + `note` wajib.
+Index: `(document_id, created_at)`, `movement_type`.
+
+### document_processing_assignments — terimplementasi Fase 2C-1
+
+| Kolom | Tipe | Keterangan |
+|---|---|---|
+| id | BIGINT U PK | |
+| document_id | BIGINT U FK>documents.restrict | |
+| officer_id | BIGINT U FK>officers.restrict | wajib ACTIVE + unit `PENGOLAHAN_LS` |
+| assigned_by | BIGINT U FK>users.restrict | |
+| assigned_at | DATETIME | waktu server |
+| returned_at | DATETIME NULL | belum dipakai (tanpa fitur kembali) |
+| status | VARCHAR(20) default `ACTIVE` | `ACTIVE/RETURNED/CANCELLED`; satu `ACTIVE` per dokumen via lock |
+| note | TEXT NULL | |
+| timestamps | | |
+
+Index: `(document_id, status)`, `officer_id`.
+
 ## 3. Relasi
 
 - `WorkUnit 1-N anak WorkUnit`; `WorkUnit 1-N Officer`.
@@ -255,6 +409,11 @@ Index: `(allocation_id, record_status)`, `enumeration_status`, `krt_name`.
   `Allocation 1-N Assignment` (histori); `Officer 1-N Assignment`;
   `User 1-N Allocation/Assignment` (creator/assigner).
 - Fase 2B: `Allocation 1-N DsrtSample`; `User 1-N DsrtSample` (creator/verifier/archiver).
+- Fase 2C-1: `Allocation/DsrtSample 1-N Document` (tepat satu);
+  `Document 1-N ManifestItem/HolderHistory/ProcessingAssignment`;
+  `Document 1-1 Holder/Transfer(via Manifest)`;
+  `Manifest 1-N Item`; `Transfer 1-N TransferItem`;
+  `User 1-N Document*` (creator/submitter/receiver/assigner/mover).
 
 ## 4. Migration
 
@@ -262,6 +421,7 @@ Index: `(allocation_id, record_status)`, `enumeration_status`, `krt_name`.
   `work_units → survey_types → survey_periods → regions → officers → officer_aliases → audit_logs`.
 - Fase 2A menambah: `allocations → assignments` (setelah master).
 - Fase 2B menambah: `dsrt_samples` (setelah alokasi).
+- Fase 2C-1 menambah: `document_types → document_locations → documents → document_manifests → document_manifest_items → document_transfers → document_transfer_items → document_holders → document_holder_histories → document_processing_assignments`.
 - Append-only: perubahan memakai migration baru; larang edit migration merged/jalan.
 - FK memakai `restrict` kecuali dinyatakan (`officers.user_id nullOnDelete`, `officer_aliases cascade`).
 - Contoh nama: `2026_01_01_000001_create_work_units_table.php` (tanggal nyata saat implementasi).

@@ -44,6 +44,10 @@ return [
         'dsrt.view',
         'dsrt.manage',
         'dsrt.verify',
+        'document.view',
+        'document.manage',
+        'document.receive',
+        'document.assign',
     ],
 
     'basic_permissions' => [
