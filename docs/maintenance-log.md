@@ -3,6 +3,27 @@
 Catatan perubahan kode hasil sesi analisa dan pengujian menyeluruh.
 Format: tanggal — berkas — alasan/temuan. Urutan terbaru di atas.
 
+## 2026-09-04 (dokumen) — Alur kirim dokumen SOSIAL→IPDS
+
+Permintaan pengguna: kirim dokumen dari Tim Statistik Sosial ke Tim IPDS.
+Sebelumnya `SubmitDocumentManifest` menghardcode tujuan `PENGOLAHAN_LS`.
+
+1. `app/Actions/Master/SubmitDocumentManifest.php` — tambah konstanta
+   `ALLOWED_DESTINATIONS = ['PENGOLAHAN_LS', 'IPDS']`; validasi submit kini
+   menerima `SOSIAL → PENGOLAHAN_LS` dan `SOSIAL → IPDS`; pesan error diubah
+   menjadi "Manifest wajib dari SOSIAL ke PENGOLAHAN_LS atau IPDS".
+   `ReceiveDocumentManifest` sudah generik (memakai `to_work_unit_id` manifest),
+   sehingga serah terima ke IPDS berjalan tanpa perubahan tambahan.
+2. `tests/Feature/ManifestWorkflowTest.php` — test lama "unit selain sosial
+   pengolahan ditolak" (SOSIAL→IPDS ditolak) diubah menjadi dua test:
+   "submit manifest dari SOSIAL ke IPDS berhasil" + "submit manifest dari unit
+   bukan SOSIAL ditolak" (PENGOLAHAN_LS→IPDS tetap ditolak).
+3. `docs/architecture.md`, `docs/database.md`, `README.md` — sinkronisasi
+   kontrak workflow fisik SOSIAL→PENGOLAHAN_LS/IPDS.
+
+Verifikasi: `ManifestWorkflowTest` + `TransferReceiptTest` 16 passed (78 assertions).
+RBAC tetap: modul dokumen hanya Administrator (tidak ada perubahan permission role).
+
 ## 2026-09-04 (impor) — Integrasi data Alokasi.xlsx
 
 1. `app/Support/XlsxReader.php` (baru) — pembaca XLSX mandiri (ZipArchive +

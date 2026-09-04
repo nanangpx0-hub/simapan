@@ -15,6 +15,12 @@ use Illuminate\Validation\ValidationException;
 
 class SubmitDocumentManifest
 {
+    /** Unit penerima valid alur SOSIAL (Tim Sosial) -> unit pengolahan/IPDS. */
+    public const ALLOWED_DESTINATIONS = [
+        'PENGOLAHAN_LS',
+        'IPDS',
+    ];
+
     /**
      * @throws ValidationException
      */
@@ -35,9 +41,9 @@ class SubmitDocumentManifest
             $fromUnit = $locked->fromUnit()->firstOrFail();
             $toUnit = $locked->toUnit()->firstOrFail();
 
-            if ($fromUnit->code !== 'SOSIAL' || $toUnit->code !== 'PENGOLAHAN_LS') {
+            if ($fromUnit->code !== 'SOSIAL' || ! in_array($toUnit->code, self::ALLOWED_DESTINATIONS, true)) {
                 throw ValidationException::withMessages([
-                    'status' => 'Manifest wajib dari SOSIAL ke PENGOLAHAN_LS.',
+                    'status' => 'Manifest wajib dari SOSIAL ke PENGOLAHAN_LS atau IPDS.',
                 ]);
             }
 

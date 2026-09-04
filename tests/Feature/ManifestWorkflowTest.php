@@ -171,7 +171,7 @@ test('tidak ada delete route manifest dan dokumen', function (): void {
     expect(DocumentManifest::where('id', $manifest->id)->exists())->toBeTrue();
 });
 
-test('submit manifest unit selain sosial pengolahan ditolak', function (): void {
+test('submit manifest dari SOSIAL ke IPDS berhasil', function (): void {
     $admin = adminDokumenUji();
     $sosial = WorkUnit::where('code', 'SOSIAL')->firstOrFail();
     $ipds = WorkUnit::where('code', 'IPDS')->firstOrFail();
@@ -179,6 +179,31 @@ test('submit manifest unit selain sosial pengolahan ditolak', function (): void 
     $manifest = DocumentManifest::create([
         'manifest_number' => ManifestNumber::next(),
         'from_work_unit_id' => $sosial->getKey(),
+        'to_work_unit_id' => $ipds->getKey(),
+        'status' => 'DRAFT',
+        'created_by' => $admin->getKey(),
+    ]);
+    $dokumen = dokumenManifestUji($admin);
+    $manifest->items()->create([
+        'document_id' => $dokumen->getKey(),
+        'qty_sent' => 1,
+        'condition_sent' => 'GOOD',
+    ]);
+
+    $this->actingAs($admin)->post(route('document_manifests.submit', $manifest))->assertRedirect();
+
+    expect($manifest->refresh()->status)->toBe('SUBMITTED');
+    expect($manifest->transfer()->exists())->toBeTrue();
+});
+
+test('submit manifest dari unit bukan SOSIAL ditolak', function (): void {
+    $admin = adminDokumenUji();
+    $olah = WorkUnit::where('code', 'PENGOLAHAN_LS')->firstOrFail();
+    $ipds = WorkUnit::where('code', 'IPDS')->firstOrFail();
+
+    $manifest = DocumentManifest::create([
+        'manifest_number' => ManifestNumber::next(),
+        'from_work_unit_id' => $olah->getKey(),
         'to_work_unit_id' => $ipds->getKey(),
         'status' => 'DRAFT',
         'created_by' => $admin->getKey(),

@@ -23,7 +23,7 @@ Fase 1B-4 selesai: master petugas + alias (tanpa delete fisik UI).
 Fase 1B-5 selesai: audit trail append-only + halaman read-only.
 Fase 2A selesai: alokasi kegiatan + penugasan historis (tanpa delete UI).
 Fase 2B selesai: DSRT Susenas nested alokasi (tanpa delete UI).
-Fase 2C-1 selesai: dokumen fisik + manifest + serah terima + penugasan internal (tanpa delete UI).
+Fase 2C-1 selesai: dokumen fisik + manifest + serah terima + penugasan internal (tanpa delete UI; alur SOSIAL→PENGOLAHAN_LS/IPDS).
 Belum ada peminjaman/temuan/impor/finalisasi (tanpa Livewire, upload, Excel).
 
 ## Instalasi Lokal (Laragon, MySQL 8.0.30)

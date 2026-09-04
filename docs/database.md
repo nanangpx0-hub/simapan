@@ -296,7 +296,7 @@ Index: `(allocation_id, status)`, `(dsrt_sample_id, status)`, `document_type_id`
 | id | BIGINT U PK | |
 | manifest_number | VARCHAR(64) UNIQUE | server-side `DM-YYYYMMDD-###`, global per tanggal |
 | from_work_unit_id | BIGINT U FK>work_units.restrict | wajib code `SOSIAL` |
-| to_work_unit_id | BIGINT U FK>work_units.restrict | wajib code `PENGOLAHAN_LS` |
+| to_work_unit_id | BIGINT U FK>work_units.restrict | wajib code `PENGOLAHAN_LS`/`IPDS` |
 | status | VARCHAR(30) default `DRAFT` | alur via action; ubah unit hanya saat `DRAFT` |
 | submitted_by | BIGINT U NULL FK>users.nullOnDelete | server-side |
 | submitted_at | DATETIME NULL | server-side |
