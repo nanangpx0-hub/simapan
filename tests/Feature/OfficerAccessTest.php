@@ -24,7 +24,7 @@ test('guest diarahkan ke login pada petugas', function (): void {
 
 test('user tanpa view mendapat 403 pada daftar dan detail', function (): void {
     $user = User::factory()->create();
-    $user->assignRole('viewer');
+    $user->assignRole('field_officer');
     $unit = WorkUnit::where('code', 'SOSIAL')->firstOrFail();
     $officer = Officer::create([
         'code' => 'LIH-01', 'name' => 'Lihat Uji', 'work_unit_id' => $unit->getKey(),
@@ -83,14 +83,14 @@ test('administrator dapat create update dan nonaktifkan petugas', function (): v
 });
 
 test('menu master petugas mengikuti permission view', function (): void {
+    $denied = User::factory()->create();
+    $denied->assignRole('field_officer');
+
+    $this->actingAs($denied)->get('/dashboard')->assertOk()->assertDontSee('Master Petugas', false);
+
     $viewer = User::factory()->create();
     $viewer->assignRole('viewer');
 
-    $this->actingAs($viewer)->get('/dashboard')->assertOk()->assertDontSee('Master Petugas', false);
-
-    $allowed = User::factory()->create();
-    $allowed->givePermissionTo('dashboard.view', 'master.officer.view');
-
-    $this->actingAs($allowed)->get('/dashboard')->assertOk()->assertSee('Master Petugas', false);
-    $this->actingAs($viewer)->get('/master/petugas')->assertForbidden();
+    $this->actingAs($viewer)->get('/dashboard')->assertOk()->assertSee('Master Petugas', false);
+    $this->actingAs($denied)->get('/master/petugas')->assertForbidden();
 });

@@ -13,36 +13,7 @@
                         <p>{{ __('Daftar manifest pengiriman.') }}</p>
                         <a href="{{ route('document_manifests.create') }}" class="underline">{{ __('Buat manifest') }}</a>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left">
-                        <thead>
-                            <tr class="border-b">
-                                <th class="py-2">{{ __('Nomor') }}</th>
-                                <th class="py-2">{{ __('Dari') }}</th>
-                                <th class="py-2">{{ __('Ke') }}</th>
-                                <th class="py-2">{{ __('Item') }}</th>
-                                <th class="py-2">{{ __('Status') }}</th>
-                                <th class="py-2">{{ __('Aksi') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($manifests as $manifest)
-                                <tr class="border-b">
-                                    <td class="py-2">{{ $manifest->manifest_number }}</td>
-                                    <td class="py-2">{{ $manifest->fromUnit->code }}</td>
-                                    <td class="py-2">{{ $manifest->toUnit->code }}</td>
-                                    <td class="py-2">{{ $manifest->items_count }}</td>
-                                    <td class="py-2">{{ $manifest->status }}</td>
-                                    <td class="py-2">
-                                        <a href="{{ route('document_manifests.show', $manifest) }}" class="underline">{{ __('Detail') }}</a>
-                                        <a href="{{ route('document_manifests.edit', $manifest) }}" class="underline ms-2">{{ __('Ubah') }}</a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-4">{{ $manifests->links() }}</div>
+                    <livewire:master.document-manifest-table />
                 </div>
             </div>
         </div>

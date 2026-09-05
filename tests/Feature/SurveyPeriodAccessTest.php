@@ -53,7 +53,7 @@ test('guest diarahkan ke login pada periode survei', function (): void {
 
 test('user tanpa view mendapat 403 pada periode survei', function (): void {
     $user = User::factory()->create();
-    $user->assignRole('viewer');
+    $user->assignRole('field_officer');
 
     $this->actingAs($user)->get('/master/periode-survei')->assertForbidden();
 });

@@ -13,29 +13,7 @@
                         <p>{{ __('Katalog lokasi penyimpanan.') }}</p>
                         <a href="{{ route('document_locations.create') }}" class="underline">{{ __('Tambah lokasi') }}</a>
                     </div>
-                    <table class="w-full text-sm text-left">
-                        <thead>
-                            <tr class="border-b">
-                                <th class="py-2">{{ __('Kode') }}</th>
-                                <th class="py-2">{{ __('Nama') }}</th>
-                                <th class="py-2">{{ __('Status') }}</th>
-                                <th class="py-2">{{ __('Aksi') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($locations as $location)
-                                <tr class="border-b">
-                                    <td class="py-2">{{ $location->code }}</td>
-                                    <td class="py-2">{{ $location->name }}</td>
-                                    <td class="py-2">{{ $location->is_active ? __('Aktif') : __('Nonaktif') }}</td>
-                                    <td class="py-2">
-                                        <a href="{{ route('document_locations.edit', $location) }}" class="underline">{{ __('Ubah') }}</a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                    <div class="mt-4">{{ $locations->links() }}</div>
+                    <livewire:master.document-location-table />
                 </div>
             </div>
         </div>

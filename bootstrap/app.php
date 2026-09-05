@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AuditSuperAdminRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -18,6 +19,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
+        ]);
+
+        // Audit semua aktivitas mutasi yang dilakukan akun Super Admin.
+        $middleware->web(append: [
+            AuditSuperAdminRequests::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

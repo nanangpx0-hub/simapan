@@ -397,6 +397,31 @@ Index: `(document_id, created_at)`, `movement_type`.
 
 Index: `(document_id, status)`, `officer_id`.
 
+### updating_manifest_items (baris NKS pemutakhiran VSEN.P) — terimplementasi Fase 2C-2
+
+| Kolom | Tipe | Keterangan |
+|---|---|---|
+| id | BIGINT U PK | |
+| document_manifest_id | BIGINT U FK>document_manifests.restrict | satu baris per `(manifest, allocation)` UNIQUE |
+| allocation_id | BIGINT U FK>allocations.restrict | |
+| nks | VARCHAR(32) | string; leading-zero terjaga, tanpa cast integer |
+| kecamatan_code | VARCHAR(64) | string dari induk desa |
+| desa_code | VARCHAR(64) | string `full_code` desa |
+| household_count_listing | INT UNSIGNED default 0 | baseline listing; target validasi entri |
+| has_vsen_p | BOOL default true | checklist berkas VSEN26.P |
+| has_peta_ws | BOOL default true | checklist berkas Peta WS |
+| physical_condition | VARCHAR(20) default `GOOD` | `GOOD/DAMAGED/INCOMPLETE` |
+| processing_officer_id | BIGINT U NULL FK>officers.nullOnDelete | kolom Pengolah; unit `PENGOLAHAN_LS` |
+| delivery_status | VARCHAR(30) default `DRAFT` | `DRAFT/SENT_BY_SOCIAL/RECEIVED_BY_PLS/ASSIGNED_TO_PROCESSOR` |
+| receive_note | TEXT NULL | wajib bila berkas tak lengkap |
+| timestamps | | |
+
+Manifest BAST bernomor `BAST-P-SUSENAS/YYYYMM/XXXX` (`ManifestNumber::nextUpdating`).
+Manifest pemutakhiran memakai status `SUBMITTED → RECEIVED_BY_PLS`.
+Validasi entri vs listing dicatat pada `processing_entry_reports`
+(`PEMUTAKHIRAN_SUSENAS`, `DISCREPANCY` bila selisih).
+Index: `(document_manifest_id, allocation_id)` UNIQUE, `delivery_status`, `processing_officer_id`.
+
 ## 3. Relasi
 
 - `WorkUnit 1-N anak WorkUnit`; `WorkUnit 1-N Officer`.

@@ -7,9 +7,11 @@ namespace App\Http\Controllers\Master;
 use App\Actions\Master\ActivateSurveyPeriod;
 use App\Actions\Master\ArchiveSurveyPeriod;
 use App\Actions\Master\CloseSurveyPeriod;
+use App\Exports\SurveyPeriodExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Master\StoreSurveyPeriodRequest;
 use App\Http\Requests\Master\UpdateSurveyPeriodRequest;
+use App\Imports\SurveyPeriodImport;
 use App\Models\SurveyPeriod;
 use App\Models\SurveyType;
 use Illuminate\Http\RedirectResponse;
@@ -17,43 +19,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SurveyPeriodController extends Controller
 {
-    public function index(Request $request): View
+    public function index(): View
     {
         Gate::authorize('viewAny', SurveyPeriod::class);
 
-        $filters = $request->validate([
-            'survey_type_id' => ['nullable', 'integer'],
-            'status' => ['nullable', 'string'],
-            'year' => ['nullable', 'integer'],
-        ]);
-
-        $periods = SurveyPeriod::query()
-            ->with(['surveyType', 'creator', 'closer'])
-            ->when(isset($filters['survey_type_id']) && is_numeric($filters['survey_type_id']), function ($query) use ($filters): void {
-                $query->where('survey_type_id', (int) $filters['survey_type_id']);
-            })
-            ->when(($filters['status'] ?? null) && in_array($filters['status'], SurveyPeriod::STATUSES, true), function ($query) use ($filters): void {
-                $query->where('status', $filters['status']);
-            })
-            ->when(isset($filters['year']) && is_numeric($filters['year']), function ($query) use ($filters): void {
-                $query->where('year', (int) $filters['year']);
-            })
-            ->orderByDesc('year')
-            ->orderBy('survey_type_id')
-            ->paginate(15)
-            ->withQueryString();
-
-        $types = SurveyType::query()->orderBy('code')->get();
-
-        return view('master.periode-survei.index', [
-            'periods' => $periods,
-            'types' => $types,
-            'statuses' => SurveyPeriod::STATUSES,
-            'filters' => $filters,
-        ]);
+        return view('master.periode-survei.index');
     }
 
     public function create(): View
@@ -119,6 +94,34 @@ class SurveyPeriodController extends Controller
         });
 
         return redirect()->route('master.survey_periods.index');
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        Gate::authorize('viewAny', SurveyPeriod::class);
+
+        $filters = $request->validate([
+            'survey_type_id' => ['nullable', 'integer'],
+            'status' => ['nullable', 'string'],
+            'year' => ['nullable', 'integer'],
+            'q' => ['nullable', 'string', 'max:150'],
+        ]);
+
+        return Excel::download(new SurveyPeriodExport($filters), 'survey-periods.xlsx');
+    }
+
+    public function import(Request $request): RedirectResponse
+    {
+        Gate::authorize('create', SurveyPeriod::class);
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,csv', 'max:5120'],
+        ]);
+
+        $import = new SurveyPeriodImport;
+        Excel::import($import, $request->file('file'));
+
+        return redirect()->route('master.survey_periods.index')->with('status', __('Impor selesai: :n data baru.', ['n' => $import->imported]));
     }
 
     public function activate(Request $request, SurveyPeriod $surveyPeriod, ActivateSurveyPeriod $action): RedirectResponse

@@ -21,7 +21,7 @@ test('guest diarahkan ke login pada wilayah', function (): void {
 
 test('user tanpa view mendapat 403 pada daftar wilayah', function (): void {
     $user = User::factory()->create();
-    $user->assignRole('viewer');
+    $user->assignRole('field_officer');
 
     $this->actingAs($user)->get('/master/wilayah')->assertForbidden();
 });

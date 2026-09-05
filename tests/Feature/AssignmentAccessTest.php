@@ -48,15 +48,15 @@ test('authorization halaman penugasan mengikuti permission', function (): void {
     $admin->assignRole('administrator');
     $alokasi = alokasiAksesUji($admin);
 
+    $denied = User::factory()->create();
+    $denied->assignRole('processing_officer');
+
+    $this->actingAs($denied)->get(route('allocations.assignments.index', $alokasi))->assertForbidden();
+
     $viewer = User::factory()->create();
     $viewer->assignRole('viewer');
 
-    $this->actingAs($viewer)->get(route('allocations.assignments.index', $alokasi))->assertForbidden();
-
-    $lihat = User::factory()->create();
-    $lihat->givePermissionTo('allocation.view');
-
-    $this->actingAs($lihat)->get(route('allocations.assignments.index', $alokasi))->assertOk();
+    $this->actingAs($viewer)->get(route('allocations.assignments.index', $alokasi))->assertOk();
 });
 
 test('user tanpa allocation.assign mendapat 403 assign dan unassign', function (): void {

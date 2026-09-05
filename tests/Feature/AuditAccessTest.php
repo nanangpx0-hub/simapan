@@ -23,7 +23,7 @@ test('guest diarahkan ke login pada audit logs', function (): void {
 
 test('user tanpa audit.view mendapat 403', function (): void {
     $user = User::factory()->create();
-    $user->assignRole('viewer');
+    $user->assignRole('field_officer');
     $log = AuditLog::create([
         'event_uuid' => (string) Str::uuid(),
         'action' => 'created',
@@ -51,15 +51,21 @@ test('administrator dapat membuka daftar dan detail', function (): void {
 });
 
 test('menu audit trail mengikuti permission', function (): void {
+    $denied = User::factory()->create();
+    $denied->assignRole('field_officer');
+
+    $this->actingAs($denied)->get('/dashboard')->assertOk()->assertDontSee('Audit Trail', false);
+
     $viewer = User::factory()->create();
     $viewer->assignRole('viewer');
 
-    $this->actingAs($viewer)->get('/dashboard')->assertOk()->assertDontSee('Audit Trail', false);
+    $this->actingAs($viewer)->get('/dashboard')->assertOk()->assertSee('Audit Trail', false);
 
     $admin = User::factory()->create();
     $admin->assignRole('administrator');
 
     $this->actingAs($admin)->get('/dashboard')->assertOk()->assertSee('Audit Trail', false);
+    $this->actingAs($denied)->get('/audit-logs')->assertForbidden();
 });
 
 test('tidak ada endpoint tulis audit log', function (): void {

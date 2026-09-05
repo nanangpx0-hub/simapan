@@ -13,29 +13,7 @@
                         <p>{{ __('Katalog jenis dokumen.') }}</p>
                         <a href="{{ route('document_types.create') }}" class="underline">{{ __('Tambah jenis') }}</a>
                     </div>
-                    <table class="w-full text-sm text-left">
-                        <thead>
-                            <tr class="border-b">
-                                <th class="py-2">{{ __('Kode') }}</th>
-                                <th class="py-2">{{ __('Nama') }}</th>
-                                <th class="py-2">{{ __('Status') }}</th>
-                                <th class="py-2">{{ __('Aksi') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($types as $type)
-                                <tr class="border-b">
-                                    <td class="py-2">{{ $type->code }}</td>
-                                    <td class="py-2">{{ $type->name }}</td>
-                                    <td class="py-2">{{ $type->is_active ? __('Aktif') : __('Nonaktif') }}</td>
-                                    <td class="py-2">
-                                        <a href="{{ route('document_types.edit', $type) }}" class="underline">{{ __('Ubah') }}</a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                    <div class="mt-4">{{ $types->links() }}</div>
+                    <livewire:master.document-type-table />
                 </div>
             </div>
         </div>

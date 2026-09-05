@@ -9,9 +9,12 @@ use App\Actions\Master\ArchiveAllocation;
 use App\Actions\Master\CompleteAllocation;
 use App\Actions\Master\ResumeAllocation;
 use App\Actions\Master\SuspendAllocation;
+use App\Exports\AllocationExport;
+use App\Exports\ExecutiveProgressExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Master\StoreAllocationRequest;
 use App\Http\Requests\Master\UpdateAllocationRequest;
+use App\Imports\AllocationImport;
 use App\Models\Allocation;
 use App\Models\Region;
 use App\Models\SurveyPeriod;
@@ -20,10 +23,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AllocationController extends Controller
 {
-    public function index(Request $request): View
+    public function index(): View
+    {
+        Gate::authorize('viewAny', Allocation::class);
+
+        return view('master.alokasi.index');
+    }
+
+    public function export(Request $request): BinaryFileResponse
     {
         Gate::authorize('viewAny', Allocation::class);
 
@@ -34,39 +46,28 @@ class AllocationController extends Controller
             'q' => ['nullable', 'string', 'max:150'],
         ]);
 
-        $allocations = Allocation::query()
-            ->with(['period.surveyType', 'village', 'activeAssignments.officer'])
-            ->when(isset($filters['survey_period_id']) && is_numeric($filters['survey_period_id']), function ($query) use ($filters): void {
-                $query->forPeriod((int) $filters['survey_period_id']);
-            })
-            ->when(($filters['status'] ?? null) && in_array($filters['status'], Allocation::STATUSES, true), function ($query) use ($filters): void {
-                $query->byStatus($filters['status']);
-            })
-            ->when(isset($filters['village_region_id']) && is_numeric($filters['village_region_id']), function ($query) use ($filters): void {
-                $query->forVillage((int) $filters['village_region_id']);
-            })
-            ->when(! empty($filters['q'] ?? null), function ($query) use ($filters): void {
-                $keyword = '%'.str_replace(['%', '_'], '', (string) $filters['q']).'%';
-                $query->where(function ($query) use ($keyword): void {
-                    $query->where('nks', 'like', $keyword)
-                        ->orWhere('sls_name', 'like', $keyword);
-                });
-            })
-            ->orderByDesc('id')
-            ->paginate(15)
-            ->withQueryString();
+        return Excel::download(new AllocationExport($filters), 'allocations.xlsx');
+    }
 
-        $periods = SurveyPeriod::query()->orderByDesc('year')->orderBy('code')->get();
-        $villages = Region::query()->where('level', 'DESA_KELURAHAN_NAGARI')->orderBy('full_code')->get();
+    public function exportExecutive(): BinaryFileResponse
+    {
+        Gate::authorize('viewAny', Allocation::class);
 
-        return view('master.alokasi.index', [
-            'allocations' => $allocations,
-            'periods' => $periods,
-            'villages' => $villages,
-            'statuses' => Allocation::STATUSES,
-            'roles' => Allocation::ASSIGNMENT_ROLES,
-            'filters' => $filters,
+        return Excel::download(new ExecutiveProgressExport, 'rekap-eksekutif.xlsx');
+    }
+
+    public function import(Request $request): RedirectResponse
+    {
+        Gate::authorize('create', Allocation::class);
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,csv', 'max:5120'],
         ]);
+
+        $import = new AllocationImport($request->user()->getKey());
+        Excel::import($import, $request->file('file'));
+
+        return redirect()->route('allocations.index')->with('status', __('Impor selesai: :n data baru.', ['n' => $import->imported]));
     }
 
     public function create(): View

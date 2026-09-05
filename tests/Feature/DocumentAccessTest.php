@@ -38,7 +38,7 @@ test('guest diarahkan ke login pada halaman dokumen', function (): void {
 
 test('user tanpa document.view mendapat 403', function (): void {
     $user = User::factory()->create();
-    $user->assignRole('viewer');
+    $user->givePermissionTo('dashboard.view', 'profile.manage');
 
     $this->actingAs($user)->get('/dokumen')->assertForbidden();
     $this->actingAs($user)->get('/dokumen/jenis')->assertForbidden();

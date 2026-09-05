@@ -79,7 +79,7 @@ test('user tanpa allocation.view mendapat 403', function (): void {
     $alokasi = alokasiUji($admin, periodeAlokasiUji(), desaAlokasiUji());
 
     $user = User::factory()->create();
-    $user->assignRole('viewer');
+    $user->assignRole('processing_officer');
 
     $this->actingAs($user)->get('/alokasi')->assertForbidden();
     $this->actingAs($user)->get(route('allocations.show', $alokasi))->assertForbidden();
@@ -133,14 +133,14 @@ test('administrator dapat akses seluruh halaman alokasi', function (): void {
 });
 
 test('navigasi alokasi mengikuti permission view', function (): void {
+    $denied = User::factory()->create();
+    $denied->assignRole('processing_officer');
+
+    $this->actingAs($denied)->get('/dashboard')->assertOk()->assertDontSee('Alokasi Kegiatan', false);
+
     $viewer = User::factory()->create();
     $viewer->assignRole('viewer');
 
-    $this->actingAs($viewer)->get('/dashboard')->assertOk()->assertDontSee('Alokasi Kegiatan', false);
-
-    $allowed = User::factory()->create();
-    $allowed->givePermissionTo('dashboard.view', 'allocation.view');
-
-    $this->actingAs($allowed)->get('/dashboard')->assertOk()->assertSee('Alokasi Kegiatan', false);
-    $this->actingAs($viewer)->get('/alokasi')->assertForbidden();
+    $this->actingAs($viewer)->get('/dashboard')->assertOk()->assertSee('Alokasi Kegiatan', false);
+    $this->actingAs($denied)->get('/alokasi')->assertForbidden();
 });

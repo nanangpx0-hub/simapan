@@ -19,6 +19,16 @@ class DocumentProcessingAssignment extends Model
         'CANCELLED',
     ];
 
+    /**
+     * Unit kerja yang boleh memegang penugasan pengolahan.
+     *
+     * @var list<string>
+     */
+    public const PROCESSING_UNIT_CODES = [
+        'PENGOLAHAN_LS',
+        'IPDS',
+    ];
+
     protected $fillable = [
         'document_id',
         'officer_id',

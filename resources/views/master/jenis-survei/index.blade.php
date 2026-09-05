@@ -13,35 +13,7 @@
                         <p>{{ __('Daftar jenis survei.') }}</p>
                         <a href="{{ route('master.jenis-survei.create') }}" class="underline">{{ __('Tambah jenis survei') }}</a>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left">
-                        <thead>
-                            <tr class="border-b">
-                                <th class="py-2">{{ __('Kode') }}</th>
-                                <th class="py-2">{{ __('Nama') }}</th>
-                                <th class="py-2">{{ __('Deskripsi') }}</th>
-                                <th class="py-2">{{ __('Status') }}</th>
-                                <th class="py-2">{{ __('Dibuat') }}</th>
-                                <th class="py-2">{{ __('Aksi') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($types as $type)
-                                <tr class="border-b">
-                                    <td class="py-2">{{ $type->code }}</td>
-                                    <td class="py-2">{{ $type->name }}</td>
-                                    <td class="py-2">{{ \Illuminate\Support\Str::limit($type->description, 80) }}</td>
-                                    <td class="py-2">{{ $type->is_active ? __('Aktif') : __('Nonaktif') }}</td>
-                                    <td class="py-2">{{ $type->created_at }}</td>
-                                    <td class="py-2">
-                                        <a href="{{ route('master.jenis-survei.edit', $type) }}" class="underline">{{ __('Ubah') }}</a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-4">{{ $types->links() }}</div>
+                    <livewire:master.survey-type-table />
                 </div>
             </div>
         </div>

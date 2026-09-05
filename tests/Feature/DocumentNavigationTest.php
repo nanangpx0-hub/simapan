@@ -14,14 +14,14 @@ beforeEach(function (): void {
 });
 
 test('menu dokumen mengikuti permission view', function (): void {
+    $denied = User::factory()->create();
+    $denied->givePermissionTo('dashboard.view', 'profile.manage');
+
+    $this->actingAs($denied)->get('/dashboard')->assertOk()->assertDontSee('Dokumen', false);
+
     $viewer = User::factory()->create();
     $viewer->assignRole('viewer');
 
-    $this->actingAs($viewer)->get('/dashboard')->assertOk()->assertDontSee('Dokumen', false);
-
-    $allowed = User::factory()->create();
-    $allowed->givePermissionTo('dashboard.view', 'document.view');
-
-    $this->actingAs($allowed)->get('/dashboard')->assertOk()->assertSee('Dokumen', false);
-    $this->actingAs($viewer)->get('/dokumen')->assertForbidden();
+    $this->actingAs($viewer)->get('/dashboard')->assertOk()->assertSee('Dokumen', false);
+    $this->actingAs($denied)->get('/dokumen')->assertForbidden();
 });

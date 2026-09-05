@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Master;
 
+use App\Exports\DocumentTypeExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Master\StoreDocumentTypeRequest;
 use App\Http\Requests\Master\UpdateDocumentTypeRequest;
+use App\Imports\DocumentTypeImport;
 use App\Models\DocumentType;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DocumentTypeController extends Controller
 {
@@ -19,9 +24,7 @@ class DocumentTypeController extends Controller
     {
         Gate::authorize('viewAny', DocumentType::class);
 
-        $types = DocumentType::query()->orderBy('code')->paginate(15);
-
-        return view('master.dokumen.jenis.index', ['types' => $types]);
+        return view('master.dokumen.jenis.index');
     }
 
     public function create(): View
@@ -67,5 +70,30 @@ class DocumentTypeController extends Controller
         });
 
         return redirect()->route('document_types.index');
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        Gate::authorize('viewAny', DocumentType::class);
+
+        $filters = $request->validate([
+            'q' => ['nullable', 'string', 'max:150'],
+        ]);
+
+        return Excel::download(new DocumentTypeExport($filters), 'document-types.xlsx');
+    }
+
+    public function import(Request $request): RedirectResponse
+    {
+        Gate::authorize('create', DocumentType::class);
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,csv', 'max:5120'],
+        ]);
+
+        $import = new DocumentTypeImport;
+        Excel::import($import, $request->file('file'));
+
+        return redirect()->route('document_types.index')->with('status', __('Impor selesai: :n data baru.', ['n' => $import->imported]));
     }
 }

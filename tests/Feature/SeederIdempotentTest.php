@@ -33,7 +33,7 @@ test('seeder dapat dijalankan dua kali tanpa duplikat', function (): void {
     $this->seed([PermissionSeeder::class, RoleSeeder::class, DevelopmentAdminSeeder::class]);
     $this->seed([PermissionSeeder::class, RoleSeeder::class, DevelopmentAdminSeeder::class]);
 
-    expect(Role::where('guard_name', 'web')->count())->toBe(8);
+    expect(Role::where('guard_name', 'web')->count())->toBe(9);
     expect(Permission::where('guard_name', 'web')->count())->toBe(25);
     expect(User::where('email', 'admin-uji@simapan.test')->count())->toBe(1);
 });

@@ -21,6 +21,7 @@ class DocumentManifest extends Model
         'RECEIVED_COMPLETE',
         'RECEIVED_PARTIAL',
         'RECEIVED_NOTED',
+        'RECEIVED_BY_PLS',
         'REJECTED',
     ];
 
@@ -89,6 +90,16 @@ class DocumentManifest extends Model
     public function items(): HasMany
     {
         return $this->hasMany(DocumentManifestItem::class);
+    }
+
+    /**
+     * Baris NKS pemutakhiran (VSEN.P) pada manifest ini.
+     *
+     * @return HasMany<UpdatingManifestItem, $this>
+     */
+    public function updatingItems(): HasMany
+    {
+        return $this->hasMany(UpdatingManifestItem::class);
     }
 
     /**

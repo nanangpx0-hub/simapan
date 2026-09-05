@@ -4,72 +4,27 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Master;
 
+use App\Exports\RegionExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Master\StoreRegionRequest;
 use App\Http\Requests\Master\UpdateRegionRequest;
+use App\Imports\RegionImport;
 use App\Models\Region;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class RegionController extends Controller
 {
-    public function index(Request $request): View
+    public function index(): View
     {
         Gate::authorize('viewAny', Region::class);
 
-        $filters = $request->validate([
-            'level' => ['nullable', 'string'],
-            'parent_id' => ['nullable', 'integer'],
-            'status' => ['nullable', 'string'],
-            'q' => ['nullable', 'string', 'max:150'],
-        ]);
-
-        $regions = Region::query()
-            ->with('parent')
-            ->withCount(['children as active_children_count' => function ($query): void {
-                $query->where('is_active', true);
-            }])
-            ->when(($filters['level'] ?? null) && in_array($filters['level'], Region::LEVELS, true), function ($query) use ($filters): void {
-                $query->where('level', $filters['level']);
-            })
-            ->when(isset($filters['parent_id']) && is_numeric($filters['parent_id']), function ($query) use ($filters): void {
-                $query->where('parent_id', (int) $filters['parent_id']);
-            })
-            ->when(($filters['status'] ?? null) === 'aktif', function ($query): void {
-                $query->where('is_active', true);
-            })
-            ->when(($filters['status'] ?? null) === 'nonaktif', function ($query): void {
-                $query->where('is_active', false);
-            })
-            ->when(! empty($filters['q'] ?? null), function ($query) use ($filters): void {
-                $keyword = '%'.str_replace(['%', '_'], '', (string) $filters['q']).'%';
-                $query->where(function ($query) use ($keyword): void {
-                    $query->where('code', 'like', $keyword)
-                        ->orWhere('full_code', 'like', $keyword)
-                        ->orWhere('name', 'like', $keyword);
-                });
-            })
-            ->orderBy('full_code')
-            ->paginate(15)
-            ->withQueryString();
-
-        $depths = [];
-        foreach ($regions as $region) {
-            $depths[$region->getKey()] = $this->depth($region);
-        }
-
-        $filterParents = Region::query()->orderBy('full_code')->get();
-
-        return view('master.wilayah.index', [
-            'regions' => $regions,
-            'depths' => $depths,
-            'levels' => Region::LEVELS,
-            'filterParents' => $filterParents,
-            'filters' => $filters,
-        ]);
+        return view('master.wilayah.index');
     }
 
     public function create(): View
@@ -155,6 +110,34 @@ class RegionController extends Controller
         });
 
         return redirect()->route('master.wilayah.index');
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        Gate::authorize('viewAny', Region::class);
+
+        $filters = $request->validate([
+            'level' => ['nullable', 'string'],
+            'parent_id' => ['nullable', 'integer'],
+            'status' => ['nullable', 'string'],
+            'q' => ['nullable', 'string', 'max:150'],
+        ]);
+
+        return Excel::download(new RegionExport($filters), 'regions.xlsx');
+    }
+
+    public function import(Request $request): RedirectResponse
+    {
+        Gate::authorize('create', Region::class);
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,csv', 'max:5120'],
+        ]);
+
+        $import = new RegionImport;
+        Excel::import($import, $request->file('file'));
+
+        return redirect()->route('master.wilayah.index')->with('status', __('Impor selesai: :n data baru.', ['n' => $import->imported]));
     }
 
     private function depth(Region $region): int

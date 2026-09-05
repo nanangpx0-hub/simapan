@@ -1,0 +1,24 @@
+
+   PASS  Tests\Feature\ManifestWorkflowTest
+  Γ£ô buat manifest draft via http dan tambah item                                                     6.08s  
+  Γ£ô submit manifest kosong ditolak                                                                   0.22s  
+  Γ£ô submit mengubah status dokumen holder dan transfer                                               0.23s  
+  Γ£ô submit kedua kali dan tambah item setelah submit ditolak                                         0.24s  
+  Γ£ô batas 200 item per manifest                                                                      1.10s  
+  Γ£ô tidak ada delete route manifest dan dokumen                                                      8.77s  
+  Γ£ô submit manifest dari SOSIAL ke IPDS berhasil                                                     0.19s  
+  Γ£ô submit manifest dari unit bukan SOSIAL ditolak                                                   0.17s  
+  Γ£ô edit manifest setelah submit ditolak                                                             0.24s  
+
+   PASS  Tests\Feature\TransferReceiptTest
+  Γ£ô terima lengkap tanpa catatan menjadi complete                                                    0.34s  
+  Γ£ô terima penuh dengan catatan menjadi noted                                                        0.18s  
+  Γ£ô terima sebagian menjadi partial dan holder pindah                                                0.18s  
+  Γ£ô qty nol membuat dokumen tetap transit dan holder sosial                                          0.22s  
+  Γ£ô tolak semua membuat manifest rejected dan dokumen kembali                                        0.23s  
+  Γ£ô catatan wajib bila status bukan complete dan qty valid                                           0.17s  
+  Γ£ô terima manifest draft tanpa transfer menghasilkan 404                                            0.33s  
+
+  Tests:    16 passed (78 assertions)
+  Duration: 24.87s
+

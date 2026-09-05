@@ -10,7 +10,7 @@ Aplikasi web internal untuk manajemen pengolahan dan pengawasan Susenas–Seruti
 - Blade + Livewire 3
 - Auth session + CSRF, RBAC `spatie/laravel-permission`
 - Test: Pest + Factory dummy
-- UI: shell admin responsif (sidebar + widget dashboard) di atas Tailwind + Alpine, tanpa Bootstrap/jQuery
+- UI: shell admin **AdminLTE 4** (Bootstrap 5, tanpa jQuery) di Vite; Tailwind + Alpine dipertahankan untuk konten di dalam shell; ikon Font Awesome
 
 ## Status
 
@@ -24,6 +24,7 @@ Fase 1B-5 selesai: audit trail append-only + halaman read-only.
 Fase 2A selesai: alokasi kegiatan + penugasan historis (tanpa delete UI).
 Fase 2B selesai: DSRT Susenas nested alokasi (tanpa delete UI).
 Fase 2C-1 selesai: dokumen fisik + manifest + serah terima + penugasan internal (tanpa delete UI; alur SOSIAL→PENGOLAHAN_LS/IPDS).
+Pelaporan terintegrasi: tipe dokumen kanonik (`P_SUSENAS`, `VSEN_SUSENAS`, `VSERUTI`), laporan entri `processing_entry_reports` (5 laporan SUSENAS-SERUTI), reconciliation engine, SLA/deadline + notifikasi keterlambatan, dan dashboard konsolidasi real-time `/monitoring/pelaporan-dokumen` (+ ekspor Excel 5 dokumen).
 Belum ada peminjaman/temuan/impor/finalisasi (tanpa Livewire, upload, Excel).
 
 ## Instalasi Lokal (Laragon, MySQL 8.0.30)
@@ -53,17 +54,20 @@ Belum ada peminjaman/temuan/impor/finalisasi (tanpa Livewire, upload, Excel).
 
 ## Role
 
-Administrator, PPL/Petugas Lapangan, PML/Pengawas Pendataan Lapangan,
+Super Admin, Administrator, PPL/Petugas Lapangan, PML/Pengawas Pendataan Lapangan,
 Petugas Pengolahan, Pengawas Pengolahan, Operator Tim Statistik Sosial,
 Operator IPDS, Viewer/Pimpinan.
 
 ## RBAC Fase 1A
 
-Role sistem-terkelola (slug, guard `web`): `administrator`, `field_officer`,
-`field_supervisor`, `processing_officer`, `processing_supervisor`,
+Role sistem-terkelola (slug, guard `web`): `super_admin`, `administrator`,
+`field_officer`, `field_supervisor`, `processing_officer`, `processing_supervisor`,
 `social_operator`, `ipds_operator`, `viewer`. Label Indonesia hanya di UI
-(lihat `config/simapan_roles.php`). Role tidak dapat dibuat/ubah/hapus via UI;
-administrator hanya boleh assign/cabut role user lain, bukan dirinya sendiri.
+(lihat `config/simapan_roles.php`). Katalog role tidak dapat direname/dihapus;
+Super Admin dapat membuat/menghapus role custom serta mengelola permission setiap
+role via UI. `super_admin` adalah role tertinggi: hanya Super Admin yang dapat
+assign/cabut role `super_admin` dan mengubah akun Super Admin; tidak ada user yang
+boleh mengubah role dirinya sendiri.
 
 15 permission kanonik (guard `web`): `dashboard.view`, `profile.manage`,
 `admin.user.manage`, `admin.role.manage`, `audit.view`,
@@ -73,10 +77,22 @@ administrator hanya boleh assign/cabut role user lain, bukan dirinya sendiri.
   `dsrt.view/manage/verify` (21 total sejak Fase 2B),
   `document.view/manage/receive/assign` (25 total sejak Fase 2C-1).
 
-Matriks: `administrator` memegang semua 25; tujuh role lain hanya
-`dashboard.view` + `profile.manage` (tanpa akses survei global; tiket
-Operator Sos/IPDS menyusul). Tanpa `Gate::before`; tanpa bypass email/ID.
+Matriks: `super_admin` dan `administrator` memegang semua 25; tujuh role lain
+hanya `dashboard.view` + `profile.manage` (tanpa akses survei global; tiket
+Operator Sos/IPDS menyusul). `Gate::before` hanya mem-bypass untuk `super_admin`
+(tanpa bypass email/ID); manajemen role digerbangi ability `super-admin`.
 Halaman `/profile` wajib `profile.manage` (fungsi Breeze selain otorisasi tidak diubah).
+
+## Super Admin (tertinggi)
+
+- Semua permission (25) + bypass Gate, sehingga akses penuh ke seluruh modul.
+- Satu-satunya peran yang boleh: membuat role, mengubah role (rename/permission),
+  menghapus role custom, dan menetapkan role `super_admin` ke akun lain.
+- Role katalog (termasuk `super_admin`) tidak dapat dihapus; role terpakai user tidak dapat dihapus.
+- Setiap request mutasi (POST/PUT/PATCH/DELETE) Super Admin dicatat ke audit
+  (`super_admin_request`) di atas audit bisnis (`role_created/updated/deleted`,
+  `role_assigned/removed`, dst.).
+
 
 Seeder (idempotent, `php artisan db:seed` di local/testing):
 `PermissionSeeder` → `RoleSeeder` → `DevelopmentAdminSeeder`.

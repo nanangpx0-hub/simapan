@@ -17,7 +17,7 @@ use Spatie\Permission\Models\Role;
 
 test('semua role memakai guard web', function (): void {
     expect(Role::where('guard_name', '!=', 'web')->count())->toBe(0);
-    expect(Role::where('guard_name', 'web')->count())->toBe(8);
+    expect(Role::where('guard_name', 'web')->count())->toBe(9);
 });
 
 test('semua permission memakai guard web', function (): void {

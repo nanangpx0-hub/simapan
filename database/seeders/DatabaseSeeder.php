@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
                 $this->call(AllocationSeeder::class);
                 $this->call(DsrtSampleSeeder::class);
                 $this->call(DocumentMasterSeeder::class);
+                $this->call(DocumentTypeSeeder::class);
                 $this->call(DocumentSeeder::class);
             }
         });

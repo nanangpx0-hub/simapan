@@ -15,7 +15,7 @@ beforeEach(function (): void {
 
 test('menu master tersembunyi tanpa permission view', function (): void {
     $user = User::factory()->create();
-    $user->assignRole('viewer');
+    $user->assignRole('field_officer');
 
     $response = $this->actingAs($user)->get('/dashboard');
 
@@ -46,7 +46,7 @@ test('menu unit kerja tampil dengan permission view', function (): void {
 
 test('url langsung tetap 403 tanpa permission master', function (): void {
     $user = User::factory()->create();
-    $user->assignRole('viewer');
+    $user->assignRole('field_officer');
 
     $this->actingAs($user)->get('/master/jenis-survei')->assertForbidden();
     $this->actingAs($user)->get('/master/unit-kerja')->assertForbidden();

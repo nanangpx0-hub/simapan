@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Master;
 
 use App\Models\Document;
+use App\Models\DocumentProcessingAssignment;
 use App\Models\Officer;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -44,8 +45,8 @@ class AssignDocumentToProcessingOfficerRequest extends FormRequest
                 return;
             }
 
-            if ($officer->workUnit?->code !== 'PENGOLAHAN_LS') {
-                $validator->errors()->add('officer_id', 'Petugas harus berasal dari unit PENGOLAHAN_LS.');
+            if (! in_array($officer->workUnit?->code, DocumentProcessingAssignment::PROCESSING_UNIT_CODES, true)) {
+                $validator->errors()->add('officer_id', 'Petugas harus berasal dari unit PENGOLAHAN_LS atau IPDS.');
             }
         });
     }

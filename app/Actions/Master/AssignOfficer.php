@@ -44,6 +44,38 @@ class AssignOfficer
                 ]);
             }
 
+            $expectedSpatieRole = User::spatieRoleFor($role);
+
+            if ($expectedSpatieRole !== null && $officer->user_id !== null) {
+                $linkedUser = User::query()->find($officer->user_id);
+
+                if ($linkedUser instanceof User && ! $linkedUser->hasRole($expectedSpatieRole)) {
+                    throw ValidationException::withMessages([
+                        'officer_id' => 'Akun tertaut petugas harus memiliki role '.$expectedSpatieRole.' untuk assignment '.$role.'.',
+                    ]);
+                }
+            }
+
+            if (! in_array($role, Assignment::ROLES, true)) {
+                throw ValidationException::withMessages([
+                    'assignment_role' => 'Role penugasan tidak dikenal.',
+                ]);
+            }
+
+            // Validasi kesesuaian role: akun user tertaut harus memiliki
+            // Spatie role yang setara dengan assignment_role penugasan.
+            $expectedSpatieRole = User::spatieRoleFor($role);
+
+            if ($expectedSpatieRole !== null && $officer->user_id !== null) {
+                $linkedUser = $officer->user()->first();
+
+                if ($linkedUser !== null && ! $linkedUser->hasRole($expectedSpatieRole)) {
+                    throw ValidationException::withMessages([
+                        'officer_id' => 'Akun petugas tidak memiliki role '.$expectedSpatieRole.' yang setara dengan penugasan '.$role.'.',
+                    ]);
+                }
+            }
+
             $previous = Assignment::query()
                 ->where('allocation_id', $locked->getKey())
                 ->forRole($role)

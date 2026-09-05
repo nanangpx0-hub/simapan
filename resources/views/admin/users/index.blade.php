@@ -13,35 +13,7 @@
                         <p>{{ __('Daftar pengguna SIMAPAN.') }}</p>
                         <a href="{{ route('admin.users.create') }}" class="underline">{{ __('Tambah pengguna') }}</a>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left">
-                        <thead>
-                            <tr class="border-b">
-                                <th class="py-2">{{ __('Nama') }}</th>
-                                <th class="py-2">{{ __('Email') }}</th>
-                                <th class="py-2">{{ __('Status') }}</th>
-                                <th class="py-2">{{ __('Role') }}</th>
-                                <th class="py-2">{{ __('Dibuat') }}</th>
-                                <th class="py-2">{{ __('Aksi') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($users as $user)
-                                <tr class="border-b">
-                                    <td class="py-2">{{ $user->name }}</td>
-                                    <td class="py-2">{{ $user->email }}</td>
-                                    <td class="py-2">{{ $user->is_active ? __('Aktif') : __('Nonaktif') }}</td>
-                                    <td class="py-2">{{ $user->getRoleNames()->join(', ') }}</td>
-                                    <td class="py-2">{{ $user->created_at }}</td>
-                                    <td class="py-2">
-                                        <a href="{{ route('admin.users.edit', $user) }}" class="underline">{{ __('Ubah') }}</a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-4">{{ $users->links() }}</div>
+                    <livewire:admin.user-table />
                 </div>
             </div>
         </div>

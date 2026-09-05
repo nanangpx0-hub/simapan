@@ -37,6 +37,16 @@
                                 </label>
                             @endforeach
                         </div>
+                        <div class="mb-4">
+                            <label for="officer_id" class="block text-sm font-medium">{{ __('Tautkan ke data petugas (opsional)') }}</label>
+                            <select id="officer_id" name="officer_id" class="mt-1 block w-full border rounded px-3 py-2">
+                                <option value="">{{ __('— Tidak ditautkan —') }}</option>
+                                @foreach ($officers as $officer)
+                                    <option value="{{ $officer->id }}" @selected(old('officer_id', $user->officer?->id) == $officer->id)>{{ $officer->code }} — {{ $officer->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('officer_id')<p class="text-sm text-red-600 mt-1">{{ $message }}</p>@enderror
+                        </div>
                         @if ($errors->any())
                             <ul class="mb-4 text-sm text-red-600">
                                 @foreach ($errors->all() as $error)

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Master;
 
+use App\Exports\DocumentExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Master\StoreDocumentRequest;
 use App\Http\Requests\Master\UpdateDocumentRequest;
+use App\Imports\DocumentImport;
 use App\Models\Allocation;
 use App\Models\Document;
 use App\Models\DocumentLocation;
@@ -18,46 +20,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DocumentController extends Controller
 {
-    public function index(Request $request): View
+    public function index(): View
     {
         Gate::authorize('viewAny', Document::class);
 
-        $filters = $request->validate([
-            'status' => ['nullable', 'string'],
-            'document_type_id' => ['nullable', 'integer'],
-            'q' => ['nullable', 'string', 'max:150'],
-        ]);
-
-        $documents = Document::query()
-            ->with(['type', 'allocation', 'dsrtSample', 'holder'])
-            ->when(($filters['status'] ?? null) && in_array($filters['status'], Document::STATUSES, true), function ($query) use ($filters): void {
-                $query->where('status', $filters['status']);
-            })
-            ->when(isset($filters['document_type_id']) && is_numeric($filters['document_type_id']), function ($query) use ($filters): void {
-                $query->where('document_type_id', (int) $filters['document_type_id']);
-            })
-            ->when(! empty($filters['q'] ?? null), function ($query) use ($filters): void {
-                $keyword = '%'.str_replace(['%', '_'], '', (string) $filters['q']).'%';
-                $query->where(function ($query) use ($keyword): void {
-                    $query->where('document_number', 'like', $keyword)
-                        ->orWhere('title', 'like', $keyword);
-                });
-            })
-            ->orderByDesc('id')
-            ->paginate(15)
-            ->withQueryString();
-
-        $types = DocumentType::query()->orderBy('code')->get();
-
-        return view('master.dokumen.index', [
-            'documents' => $documents,
-            'types' => $types,
-            'statuses' => Document::STATUSES,
-            'filters' => $filters,
-        ]);
+        return view('master.dokumen.index');
     }
 
     public function create(): View
@@ -167,5 +139,32 @@ class DocumentController extends Controller
         });
 
         return redirect()->route('documents.show', $document);
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        Gate::authorize('viewAny', Document::class);
+
+        $filters = $request->validate([
+            'status' => ['nullable', 'string'],
+            'document_type_id' => ['nullable', 'integer'],
+            'q' => ['nullable', 'string', 'max:150'],
+        ]);
+
+        return Excel::download(new DocumentExport($filters), 'documents.xlsx');
+    }
+
+    public function import(Request $request): RedirectResponse
+    {
+        Gate::authorize('create', Document::class);
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,csv', 'max:5120'],
+        ]);
+
+        $import = new DocumentImport((int) $request->user()->getKey());
+        Excel::import($import, $request->file('file'));
+
+        return redirect()->route('documents.index')->with('status', __('Impor selesai: :n data baru.', ['n' => $import->imported]));
     }
 }

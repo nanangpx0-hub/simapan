@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Master;
 
+use App\Exports\WorkUnitExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Master\StoreWorkUnitRequest;
 use App\Http\Requests\Master\UpdateWorkUnitRequest;
+use App\Imports\WorkUnitImport;
 use App\Models\WorkUnit;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class WorkUnitController extends Controller
 {
@@ -19,14 +24,7 @@ class WorkUnitController extends Controller
     {
         Gate::authorize('viewAny', WorkUnit::class);
 
-        $units = WorkUnit::query()->with('parent')->orderBy('code')->paginate(15);
-
-        $depths = [];
-        foreach ($units as $unit) {
-            $depths[$unit->getKey()] = $this->depth($unit);
-        }
-
-        return view('master.unit-kerja.index', ['units' => $units, 'depths' => $depths]);
+        return view('master.unit-kerja.index');
     }
 
     public function create(): View
@@ -86,6 +84,32 @@ class WorkUnitController extends Controller
         });
 
         return redirect()->route('master.unit-kerja.index');
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        Gate::authorize('viewAny', WorkUnit::class);
+
+        $filters = $request->validate([
+            'q' => ['nullable', 'string', 'max:150'],
+            'status' => ['nullable', 'string'],
+        ]);
+
+        return Excel::download(new WorkUnitExport($filters), 'work-units.xlsx');
+    }
+
+    public function import(Request $request): RedirectResponse
+    {
+        Gate::authorize('create', WorkUnit::class);
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,csv', 'max:5120'],
+        ]);
+
+        $import = new WorkUnitImport;
+        Excel::import($import, $request->file('file'));
+
+        return redirect()->route('master.unit-kerja.index')->with('status', __('Impor selesai: :n data baru.', ['n' => $import->imported]));
     }
 
     private function depth(WorkUnit $unit): int

@@ -6,9 +6,12 @@ namespace App\Policies;
 
 use App\Models\DsrtSample;
 use App\Models\User;
+use App\Policies\Concerns\ScopesDataOwnership;
 
 class DsrtSamplePolicy
 {
+    use ScopesDataOwnership;
+
     public function viewAny(User $user): bool
     {
         return $user->can('dsrt.view');
@@ -16,7 +19,12 @@ class DsrtSamplePolicy
 
     public function view(User $user, DsrtSample $sample): bool
     {
-        return $user->can('dsrt.view');
+        if (! $user->can('dsrt.view')) {
+            return false;
+        }
+
+        return $this->hasUnrestrictedScope($user)
+            || $this->allocationAssignedTo($user, $sample->allocation);
     }
 
     public function create(User $user): bool
@@ -26,6 +34,11 @@ class DsrtSamplePolicy
 
     public function update(User $user, DsrtSample $sample): bool
     {
-        return $user->can('dsrt.manage');
+        if (! $user->can('dsrt.manage') && ! $user->can('dsrt.verify')) {
+            return false;
+        }
+
+        return $this->hasUnrestrictedScope($user)
+            || $this->allocationAssignedTo($user, $sample->allocation);
     }
 }

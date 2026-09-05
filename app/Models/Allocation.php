@@ -107,6 +107,16 @@ class Allocation extends Model
     }
 
     /**
+     * Baris NKS pemutakhiran (VSEN.P) untuk alokasi ini.
+     *
+     * @return HasMany<UpdatingManifestItem, $this>
+     */
+    public function updatingManifestItems(): HasMany
+    {
+        return $this->hasMany(UpdatingManifestItem::class);
+    }
+
+    /**
      * @param  Builder<Allocation>  $query
      */
     public function scopeForPeriod(Builder $query, int $periodId): Builder

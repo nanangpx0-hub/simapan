@@ -55,7 +55,7 @@ test('detail view-only termasking', function (): void {
     ]);
 
     $viewer = User::factory()->create();
-    $viewer->givePermissionTo('dsrt.view');
+    $viewer->assignRole('viewer');
 
     $response = $this->actingAs($viewer)->get(route('allocations.dsrt.show', [$alokasi, $sample]));
 
@@ -79,7 +79,8 @@ test('detail manage boleh melihat nilai penuh', function (): void {
     ]);
 
     $manager = User::factory()->create();
-    $manager->givePermissionTo('dsrt.view', 'dsrt.manage');
+    $manager->assignRole('viewer');
+    $manager->givePermissionTo('dsrt.manage');
 
     $response = $this->actingAs($manager)->get(route('allocations.dsrt.show', [$alokasi, $sample]));
 

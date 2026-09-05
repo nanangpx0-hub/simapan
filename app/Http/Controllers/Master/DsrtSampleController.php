@@ -6,9 +6,11 @@ namespace App\Http\Controllers\Master;
 
 use App\Actions\Master\ArchiveDsrtSample;
 use App\Actions\Master\VerifyDsrtSample;
+use App\Exports\DsrtSampleExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Master\StoreDsrtSampleRequest;
 use App\Http\Requests\Master\UpdateDsrtSampleRequest;
+use App\Imports\DsrtSampleImport;
 use App\Models\Allocation;
 use App\Models\DsrtSample;
 use Illuminate\Http\RedirectResponse;
@@ -16,6 +18,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DsrtSampleController extends Controller
 {
@@ -35,44 +39,21 @@ class DsrtSampleController extends Controller
         }
     }
 
-    public function index(Allocation $allocation, Request $request): View
+    public function index(Allocation $allocation): View
     {
         Gate::authorize('viewAny', DsrtSample::class);
+        Gate::authorize('view', $allocation);
         $this->ensureSusenas($allocation);
-
-        $filters = $request->validate([
-            'record_status' => ['nullable', 'string'],
-            'enumeration_status' => ['nullable', 'string'],
-            'q' => ['nullable', 'string', 'max:150'],
-        ]);
-
-        $samples = DsrtSample::query()
-            ->forAllocation((int) $allocation->getKey())
-            ->when(($filters['record_status'] ?? null) && in_array($filters['record_status'], DsrtSample::RECORD_STATUSES, true), function ($query) use ($filters): void {
-                $query->where('record_status', $filters['record_status']);
-            })
-            ->when(($filters['enumeration_status'] ?? null) && in_array($filters['enumeration_status'], DsrtSample::ENUMERATION_STATUSES, true), function ($query) use ($filters): void {
-                $query->where('enumeration_status', $filters['enumeration_status']);
-            })
-            ->when(! empty($filters['q'] ?? null), function ($query) use ($filters): void {
-                $query->search((string) $filters['q']);
-            })
-            ->orderBy('nurt')
-            ->paginate(15)
-            ->withQueryString();
 
         return view('master.alokasi.dsrt.index', [
             'allocation' => $allocation->load(['period.surveyType', 'village']),
-            'samples' => $samples,
-            'recordStatuses' => DsrtSample::RECORD_STATUSES,
-            'enumerationStatuses' => DsrtSample::ENUMERATION_STATUSES,
-            'filters' => $filters,
         ]);
     }
 
     public function create(Allocation $allocation): View
     {
         Gate::authorize('create', DsrtSample::class);
+        Gate::authorize('view', $allocation);
         $this->ensureSusenas($allocation);
 
         return view('master.alokasi.dsrt.create', [
@@ -84,6 +65,7 @@ class DsrtSampleController extends Controller
     public function store(StoreDsrtSampleRequest $request, Allocation $allocation): RedirectResponse
     {
         Gate::authorize('create', DsrtSample::class);
+        Gate::authorize('view', $allocation);
         $this->ensureSusenas($allocation);
 
         DB::transaction(function () use ($request, $allocation): void {
@@ -186,5 +168,36 @@ class DsrtSampleController extends Controller
         $action->handle($dsrtSample, $request->user());
 
         return redirect()->route('allocations.dsrt.show', [$allocation, $dsrtSample]);
+    }
+
+    public function export(Allocation $allocation, Request $request): BinaryFileResponse
+    {
+        Gate::authorize('viewAny', DsrtSample::class);
+        Gate::authorize('view', $allocation);
+        $this->ensureSusenas($allocation);
+
+        $filters = $request->validate([
+            'record_status' => ['nullable', 'string'],
+            'enumeration_status' => ['nullable', 'string'],
+            'q' => ['nullable', 'string', 'max:150'],
+        ]);
+
+        return Excel::download(new DsrtSampleExport((int) $allocation->getKey(), $filters), 'dsrt-'.$allocation->nks.'.xlsx');
+    }
+
+    public function import(Allocation $allocation, Request $request): RedirectResponse
+    {
+        Gate::authorize('create', DsrtSample::class);
+        Gate::authorize('view', $allocation);
+        $this->ensureSusenas($allocation);
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,csv', 'max:5120'],
+        ]);
+
+        $import = new DsrtSampleImport((int) $allocation->getKey(), (int) $request->user()->getKey());
+        Excel::import($import, $request->file('file'));
+
+        return redirect()->route('allocations.dsrt.index', $allocation)->with('status', __('Impor selesai: :n data baru.', ['n' => $import->imported]));
     }
 }

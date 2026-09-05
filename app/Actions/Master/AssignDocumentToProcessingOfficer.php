@@ -54,9 +54,9 @@ class AssignDocumentToProcessingOfficer
                 ]);
             }
 
-            if ($officer->workUnit?->code !== 'PENGOLAHAN_LS') {
+            if (! in_array($officer->workUnit?->code, DocumentProcessingAssignment::PROCESSING_UNIT_CODES, true)) {
                 throw ValidationException::withMessages([
-                    'officer_id' => 'Petugas harus berasal dari unit PENGOLAHAN_LS.',
+                    'officer_id' => 'Petugas harus berasal dari unit PENGOLAHAN_LS atau IPDS.',
                 ]);
             }
 

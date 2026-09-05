@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Master;
 
+use App\Exports\SurveyTypeExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Master\StoreSurveyTypeRequest;
 use App\Http\Requests\Master\UpdateSurveyTypeRequest;
+use App\Imports\SurveyTypeImport;
 use App\Models\SurveyType;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SurveyTypeController extends Controller
 {
@@ -19,9 +24,7 @@ class SurveyTypeController extends Controller
     {
         Gate::authorize('viewAny', SurveyType::class);
 
-        $types = SurveyType::query()->orderBy('code')->paginate(15);
-
-        return view('master.jenis-survei.index', ['types' => $types]);
+        return view('master.jenis-survei.index');
     }
 
     public function create(): View
@@ -67,5 +70,31 @@ class SurveyTypeController extends Controller
         });
 
         return redirect()->route('master.jenis-survei.index');
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        Gate::authorize('viewAny', SurveyType::class);
+
+        $filters = $request->validate([
+            'q' => ['nullable', 'string', 'max:150'],
+            'status' => ['nullable', 'string'],
+        ]);
+
+        return Excel::download(new SurveyTypeExport($filters), 'survey-types.xlsx');
+    }
+
+    public function import(Request $request): RedirectResponse
+    {
+        Gate::authorize('create', SurveyType::class);
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,csv', 'max:5120'],
+        ]);
+
+        $import = new SurveyTypeImport;
+        Excel::import($import, $request->file('file'));
+
+        return redirect()->route('master.jenis-survei.index')->with('status', __('Impor selesai: :n data baru.', ['n' => $import->imported]));
     }
 }

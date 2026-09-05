@@ -35,7 +35,7 @@ test('user tanpa dsrt.view mendapat 403', function (): void {
     ]);
 
     $user = User::factory()->create();
-    $user->assignRole('viewer');
+    $user->assignRole('processing_officer');
 
     $this->actingAs($user)->get(route('allocations.dsrt.index', $alokasi))->assertForbidden();
     $this->actingAs($user)->get(route('allocations.dsrt.show', [$alokasi, $sample]))->assertForbidden();
@@ -87,8 +87,8 @@ test('link dsrt hanya pada allocation susenas dengan dsrt.view', function (): vo
     $this->actingAs($admin)->get(route('allocations.show', $susenas))->assertOk()->assertSee('DSRT Susenas', false);
     $this->actingAs($admin)->get(route('allocations.show', $seruti))->assertOk()->assertDontSee('DSRT Susenas', false);
 
-    $viewer = User::factory()->create();
-    $viewer->assignRole('viewer');
+    $denied = User::factory()->create();
+    $denied->assignRole('processing_officer');
 
-    $this->actingAs($viewer)->get(route('allocations.show', $susenas))->assertForbidden();
+    $this->actingAs($denied)->get(route('allocations.show', $susenas))->assertForbidden();
 });

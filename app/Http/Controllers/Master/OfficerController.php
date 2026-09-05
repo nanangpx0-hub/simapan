@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Master;
 
+use App\Exports\OfficerExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Master\StoreOfficerRequest;
 use App\Http\Requests\Master\UpdateOfficerRequest;
+use App\Imports\OfficerImport;
 use App\Models\Officer;
 use App\Models\User;
 use App\Models\WorkUnit;
@@ -15,42 +17,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class OfficerController extends Controller
 {
-    public function index(Request $request): View
+    public function index(): View
     {
         Gate::authorize('viewAny', Officer::class);
 
-        $filters = $request->validate([
-            'work_unit_id' => ['nullable', 'integer'],
-            'status' => ['nullable', 'string'],
-            'q' => ['nullable', 'string', 'max:150'],
-        ]);
-
-        $officers = Officer::query()
-            ->with(['workUnit', 'user', 'aliases'])
-            ->withCount('aliases')
-            ->when(isset($filters['work_unit_id']) && is_numeric($filters['work_unit_id']), function ($query) use ($filters): void {
-                $query->where('work_unit_id', (int) $filters['work_unit_id']);
-            })
-            ->when(($filters['status'] ?? null) && in_array($filters['status'], Officer::STATUSES, true), function ($query) use ($filters): void {
-                $query->where('status', $filters['status']);
-            })
-            ->when(! empty($filters['q'] ?? null), function ($query) use ($filters): void {
-                $query->search((string) $filters['q']);
-            })
-            ->orderBy('code')
-            ->paginate(15)
-            ->withQueryString();
-
-        $units = WorkUnit::query()->orderBy('code')->get();
-
-        return view('master.petugas.index', [
-            'officers' => $officers,
-            'units' => $units,
-            'filters' => $filters,
-        ]);
+        return view('master.petugas.index');
     }
 
     public function create(): View
@@ -130,5 +106,32 @@ class OfficerController extends Controller
         });
 
         return redirect()->route('master.officers.index');
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        Gate::authorize('viewAny', Officer::class);
+
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:150'],
+            'status' => ['nullable', 'string'],
+            'work_unit_id' => ['nullable', 'integer'],
+        ]);
+
+        return Excel::download(new OfficerExport($filters), 'officers.xlsx');
+    }
+
+    public function import(Request $request): RedirectResponse
+    {
+        Gate::authorize('create', Officer::class);
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,csv', 'max:5120'],
+        ]);
+
+        $import = new OfficerImport;
+        Excel::import($import, $request->file('file'));
+
+        return redirect()->route('master.officers.index')->with('status', __('Impor selesai: :n data baru.', ['n' => $import->imported]));
     }
 }

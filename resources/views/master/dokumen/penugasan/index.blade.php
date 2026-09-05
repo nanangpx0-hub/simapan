@@ -13,7 +13,32 @@
                     <h3 class="font-semibold">{{ __('Aktif') }}</h3>
                     <ul class="mt-2 text-sm space-y-1">
                         @foreach ($active as $assignment)
-                            <li>{{ $assignment->officer->code }} — {{ $assignment->officer->name }}</li>
+                            <li>
+                                {{ $assignment->officer->code }} — {{ $assignment->officer->name }}
+                                @can('update', $assignment)
+                                    <form method="POST" action="{{ route('document_processing_assignments.return', [$document, $assignment]) }}" class="mt-1 flex flex-wrap gap-2 items-end">
+                                        @csrf
+                                        <div>
+                                            <label for="return-location-{{ $assignment->id }}" class="block font-medium">{{ __('Rak kembali') }}</label>
+                                            <select id="return-location-{{ $assignment->id }}" name="document_location_id" class="mt-1 border rounded px-2 py-1">
+                                                <option value="">{{ __('— Tanpa lokasi —') }}</option>
+                                                @foreach ($locations as $location)
+                                                    <option value="{{ $location->id }}">{{ $location->code }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label for="return-condition-{{ $assignment->id }}" class="block font-medium">{{ __('Kondisi akhir') }}</label>
+                                            <select id="return-condition-{{ $assignment->id }}" name="condition_code" required class="mt-1 border rounded px-2 py-1">
+                                                @foreach ($conditions as $condition)
+                                                    <option value="{{ $condition }}" @selected($condition === 'GOOD')>{{ $condition }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="underline">{{ __('Terima Kembali Dokumen') }}</button>
+                                    </form>
+                                @endcan
+                            </li>
                         @endforeach
                     </ul>
                     <h3 class="mt-4 font-semibold">{{ __('Tugaskan petugas pengolahan') }}</h3>

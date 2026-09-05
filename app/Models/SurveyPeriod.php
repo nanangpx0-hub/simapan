@@ -48,6 +48,10 @@ class SurveyPeriod extends Model
         'year',
         'start_date',
         'end_date',
+        'pemutakhiran_submission_deadline',
+        'pemutakhiran_entry_deadline',
+        'sampel_submission_deadline',
+        'sampel_entry_deadline',
         'status',
         'created_by',
         'closed_by',
@@ -61,6 +65,10 @@ class SurveyPeriod extends Model
             'year' => 'integer',
             'start_date' => 'date',
             'end_date' => 'date',
+            'pemutakhiran_submission_deadline' => 'date',
+            'pemutakhiran_entry_deadline' => 'date',
+            'sampel_submission_deadline' => 'date',
+            'sampel_entry_deadline' => 'date',
             'closed_at' => 'datetime',
         ];
     }

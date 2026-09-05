@@ -30,12 +30,12 @@ test('permission baru efektif setelah cache reset', function (): void {
     $user = User::factory()->create();
     $user->assignRole('viewer');
 
-    expect($user->can('audit.view'))->toBeFalse();
+    expect($user->can('admin.user.manage'))->toBeFalse();
 
-    $user->givePermissionTo('audit.view');
+    $user->givePermissionTo('admin.user.manage');
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-    expect($user->refresh()->can('audit.view'))->toBeTrue();
+    expect($user->refresh()->can('admin.user.manage'))->toBeTrue();
 });
 
 test('registrar cache reset tidak merusak resolusi permission', function (): void {

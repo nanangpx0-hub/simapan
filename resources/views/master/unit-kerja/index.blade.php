@@ -13,35 +13,7 @@
                         <p>{{ __('Daftar unit kerja.') }}</p>
                         <a href="{{ route('master.unit-kerja.create') }}" class="underline">{{ __('Tambah unit kerja') }}</a>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left">
-                        <thead>
-                            <tr class="border-b">
-                                <th class="py-2">{{ __('Kode') }}</th>
-                                <th class="py-2">{{ __('Nama') }}</th>
-                                <th class="py-2">{{ __('Parent') }}</th>
-                                <th class="py-2">{{ __('Status') }}</th>
-                                <th class="py-2">{{ __('Dibuat') }}</th>
-                                <th class="py-2">{{ __('Aksi') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($units as $unit)
-                                <tr class="border-b">
-                                    <td class="py-2">{{ $unit->code }}</td>
-                                    <td class="py-2" style="padding-left: {{ ($depths[$unit->id] ?? 0) * 1.5 }}rem;">{{ $unit->name }}</td>
-                                    <td class="py-2">{{ $unit->parent ? $unit->parent->code.' — '.$unit->parent->name : __('—') }}</td>
-                                    <td class="py-2">{{ $unit->is_active ? __('Aktif') : __('Nonaktif') }}</td>
-                                    <td class="py-2">{{ $unit->created_at }}</td>
-                                    <td class="py-2">
-                                        <a href="{{ route('master.unit-kerja.edit', $unit) }}" class="underline">{{ __('Ubah') }}</a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-4">{{ $units->links() }}</div>
+                    <livewire:master.work-unit-table />
                 </div>
             </div>
         </div>

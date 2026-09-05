@@ -1,0 +1,44 @@
+// AdminLTE v4 — tema SIMAPAN
+// Pola resmi kustomisasi AdminLTE 4: override variabel Bootstrap/AdminLTE
+// SEBELUM mengimpor bundle SCSS AdminLTE (yang sekaligus mengompilasi Bootstrap).
+
+@import "bootstrap/scss/functions";
+
+// Identitas SIMAPAN (indigo)
+$primary:   #4f46e5; // indigo-600
+$secondary: #64748b; // slate-500
+$success:   #059669; // emerald-600
+$info:      #0284c7; // sky-600
+$warning:   #d97706; // amber-600
+$danger:    #dc2626; // red-600
+
+$font-family-sans-serif: 'Figtree', ui-sans-serif, system-ui, sans-serif;
+
+// Sidebar lebih lebar dari default 250px
+$lte-sidebar-width: 280px;
+
+@import "admin-lte/src/scss/adminlte.scss";
+
+// Sidebar gelap khas SIMAPAN (indigo-950) via CSS variables AdminLTE 4
+.app-sidebar {
+    --lte-sidebar-color: rgba(224, 231, 255, 0.8);
+    --lte-sidebar-hover-color: #ffffff;
+    --lte-sidebar-active-color: #ffffff;
+    --lte-sidebar-hover-bg: rgba(255, 255, 255, 0.06);
+    --lte-sidebar-menu-active-bg: rgba(255, 255, 255, 0.12);
+    --lte-sidebar-menu-active-color: #ffffff;
+    --lte-sidebar-submenu-color: rgba(199, 210, 254, 0.8);
+    --lte-sidebar-submenu-hover-color: #ffffff;
+    --lte-sidebar-submenu-hover-bg: rgba(255, 255, 255, 0.06);
+    --lte-sidebar-submenu-active-color: #ffffff;
+    --lte-sidebar-submenu-active-bg: rgba(255, 255, 255, 0.12);
+    --lte-sidebar-header-color: rgba(165, 180, 252, 0.7);
+
+    background-color: #1e1b4b; // indigo-950
+    border-right: 0;
+}
+
+.app-sidebar .sidebar-brand a,
+.app-sidebar .brand-link {
+    color: #ffffff;
+}

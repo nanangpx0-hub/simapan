@@ -5,17 +5,22 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Master;
 
 use App\Actions\Master\SubmitDocumentManifest;
+use App\Exports\DocumentManifestExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Master\StoreDocumentManifestItemRequest;
 use App\Http\Requests\Master\StoreDocumentManifestRequest;
 use App\Http\Requests\Master\UpdateDocumentManifestRequest;
+use App\Imports\DocumentManifestImport;
 use App\Models\Document;
 use App\Models\DocumentManifest;
 use App\Models\WorkUnit;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DocumentManifestController extends Controller
 {
@@ -23,13 +28,7 @@ class DocumentManifestController extends Controller
     {
         Gate::authorize('viewAny', DocumentManifest::class);
 
-        $manifests = DocumentManifest::query()
-            ->with(['fromUnit', 'toUnit'])
-            ->withCount('items')
-            ->orderByDesc('id')
-            ->paginate(15);
-
-        return view('master.manifest.index', ['manifests' => $manifests]);
+        return view('master.manifest.index');
     }
 
     public function create(): View
@@ -115,6 +114,32 @@ class DocumentManifestController extends Controller
         $action->handle($documentManifest, request()->user());
 
         return redirect()->route('document_manifests.show', $documentManifest);
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        Gate::authorize('viewAny', DocumentManifest::class);
+
+        $filters = $request->validate([
+            'status' => ['nullable', 'string'],
+            'q' => ['nullable', 'string', 'max:150'],
+        ]);
+
+        return Excel::download(new DocumentManifestExport($filters), 'document-manifests.xlsx');
+    }
+
+    public function import(Request $request): RedirectResponse
+    {
+        Gate::authorize('create', DocumentManifest::class);
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,csv', 'max:5120'],
+        ]);
+
+        $import = new DocumentManifestImport((int) $request->user()->getKey());
+        Excel::import($import, $request->file('file'));
+
+        return redirect()->route('document_manifests.index')->with('status', __('Impor selesai: :n data baru.', ['n' => $import->imported]));
     }
 
     /**

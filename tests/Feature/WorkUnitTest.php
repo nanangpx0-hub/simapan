@@ -21,7 +21,7 @@ test('guest diarahkan ke login pada unit kerja', function (): void {
 
 test('user tanpa view mendapat 403 pada unit kerja', function (): void {
     $user = User::factory()->create();
-    $user->assignRole('viewer');
+    $user->assignRole('field_officer');
 
     $this->actingAs($user)->get('/master/unit-kerja')->assertForbidden();
 });
