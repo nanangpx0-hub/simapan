@@ -92,6 +92,14 @@ class Region extends Model
     }
 
     /**
+     * @return HasMany<Allocation, $this>
+     */
+    public function allocations(): HasMany
+    {
+        return $this->hasMany(Allocation::class, 'village_region_id');
+    }
+
+    /**
      * @param  Builder<Region>  $query
      */
     public function scopeActive(Builder $query): Builder

@@ -1,4 +1,15 @@
 <div class="space-y-4">
+    @if (session('status'))
+        <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-2 rounded text-sm">
+            {{ session('status') }}
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded text-sm">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <div class="flex flex-wrap items-end gap-2 text-sm">
         <div class="flex flex-col">
             <label for="survey-type-search" class="mb-1 font-medium text-gray-700">{{ __('Cari kode/nama') }}</label>
@@ -68,6 +79,9 @@
                         <td class="py-2 px-3">{{ $type->is_active ? __('Aktif') : __('Nonaktif') }}</td>
                         <td class="py-2 px-3 whitespace-nowrap" wire:click.stop>
                             <a href="{{ route('master.jenis-survei.edit', $type) }}" class="underline">{{ __('Ubah') }}</a>
+                            @if ($canManage)
+                                <button type="button" wire:click="delete({{ $type->id }})" wire:confirm="Yakin ingin menghapus jenis survei ini?" class="underline ms-2 text-red-600">{{ __('Hapus') }}</button>
+                            @endif
                         </td>
                     </tr>
                 @empty

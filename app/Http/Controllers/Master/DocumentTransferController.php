@@ -44,6 +44,20 @@ class DocumentTransferController extends Controller
         ]);
     }
 
+    public function bastIndex(): View
+    {
+        $manifests = DocumentManifest::query()
+            ->with(['fromUnit', 'toUnit'])
+            ->withCount('items')
+            ->where('status', '!=', 'DRAFT')
+            ->orderByDesc('submitted_at')
+            ->paginate(25);
+
+        return view('master.dokumen.sampel.bast', [
+            'manifests' => $manifests,
+        ]);
+    }
+
     public function update(
         ReceiveDocumentManifestRequest $request,
         DocumentManifest $documentManifest,

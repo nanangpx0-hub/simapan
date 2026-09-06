@@ -50,4 +50,12 @@ class WorkUnit extends Model
     {
         return $this->hasMany(WorkUnit::class, 'parent_id');
     }
+
+    /**
+     * @return HasMany<Officer, $this>
+     */
+    public function officers(): HasMany
+    {
+        return $this->hasMany(Officer::class);
+    }
 }

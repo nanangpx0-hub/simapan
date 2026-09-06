@@ -112,6 +112,28 @@ class RegionController extends Controller
         return redirect()->route('master.wilayah.index');
     }
 
+    public function destroy(Region $region): RedirectResponse
+    {
+        Gate::authorize('delete', $region);
+
+        if ($region->children()->exists()) {
+            return redirect()->route('master.wilayah.index')
+                ->with('error', __('Tidak dapat menghapus wilayah karena masih memiliki sub-wilayah.'));
+        }
+
+        if ($region->allocations()->exists()) {
+            return redirect()->route('master.wilayah.index')
+                ->with('error', __('Tidak dapat menghapus wilayah karena masih terhubung dengan alokasi.'));
+        }
+
+        DB::transaction(function () use ($region): void {
+            $region->delete();
+        });
+
+        return redirect()->route('master.wilayah.index')
+            ->with('status', __('Wilayah berhasil dihapus.'));
+    }
+
     public function export(Request $request): BinaryFileResponse
     {
         Gate::authorize('viewAny', Region::class);

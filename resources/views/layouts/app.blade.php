@@ -69,7 +69,7 @@
                 <div class="sidebar-brand">
                     <a href="{{ route('dashboard') }}" class="brand-link d-flex align-items-center gap-2 px-3 py-2">
                         <x-application-logo class="block h-8 w-auto fill-current text-white" />
-                        <span class="brand-text fw-semibold">SIMAPAN</span>
+                        <span class="brand-text fw-semibold" style="color: #ffffff !important;">SIMAPAN</span>
                     </a>
                 </div>
 
@@ -186,6 +186,13 @@
                                            class="nav-link {{ request()->routeIs('updating_manifests.*') ? 'active' : '' }}">
                                             <i class="nav-icon fa-solid fa-boxes-packing" aria-hidden="true"></i>
                                             <p>{{ __('Pemutakhiran Dokumen') }}</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="{{ route('sampel.bast.index') }}"
+                                           class="nav-link {{ request()->routeIs('sampel.bast.*') ? 'active' : '' }}">
+                                            <i class="nav-icon fa-solid fa-file-signature" aria-hidden="true"></i>
+                                            <p>{{ __('Daftar BAST Sampel') }}</p>
                                         </a>
                                     </li>
                                 @endcan

@@ -96,6 +96,23 @@ class SurveyPeriodController extends Controller
         return redirect()->route('master.survey_periods.index');
     }
 
+    public function destroy(SurveyPeriod $surveyPeriod): RedirectResponse
+    {
+        Gate::authorize('delete', $surveyPeriod);
+
+        if ($surveyPeriod->allocations()->exists()) {
+            return redirect()->route('master.survey_periods.index')
+                ->with('error', __('Tidak dapat menghapus periode survei karena masih terhubung dengan alokasi.'));
+        }
+
+        DB::transaction(function () use ($surveyPeriod): void {
+            $surveyPeriod->delete();
+        });
+
+        return redirect()->route('master.survey_periods.index')
+            ->with('status', __('Periode survei berhasil dihapus.'));
+    }
+
     public function export(Request $request): BinaryFileResponse
     {
         Gate::authorize('viewAny', SurveyPeriod::class);

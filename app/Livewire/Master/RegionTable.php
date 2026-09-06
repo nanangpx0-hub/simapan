@@ -95,6 +95,36 @@ class RegionTable extends Component
         $this->selectedId = $this->selectedId === $id ? null : $id;
     }
 
+    public function delete(int $id): void
+    {
+        $region = Region::findOrFail($id);
+        Gate::authorize('delete', $region);
+
+        if ($region->children()->exists()) {
+            $count = $region->children()->count();
+            session()->flash('error', __(
+                'Tidak dapat menghapus wilayah ":code" karena masih memiliki :count sub-wilayah. '.
+                'Langkah yang dapat dilakukan: 1) Hapus atau pindahkan semua sub-wilayah terlebih dahulu, atau 2) Nonaktifkan wilayah ini saja.',
+                ['code' => $region->full_code, 'count' => $count]
+            ));
+            return;
+        }
+
+        if ($region->allocations()->exists()) {
+            $count = $region->allocations()->count();
+            session()->flash('error', __(
+                'Tidak dapat menghapus wilayah ":code" karena masih terhubung dengan :count alokasi. '.
+                'Langkah yang dapat dilakukan: 1) Hapus atau pindahkan semua alokasi yang menggunakan wilayah ini, atau 2) Nonaktifkan wilayah ini saja.',
+                ['code' => $region->full_code, 'count' => $count]
+            ));
+            return;
+        }
+
+        $region->delete();
+        session()->flash('status', __('Wilayah ":code" berhasil dihapus.', ['code' => $region->full_code]));
+        $this->resetPage();
+    }
+
     public function exportUrl(): string
     {
         return route('master.wilayah.export', array_filter([

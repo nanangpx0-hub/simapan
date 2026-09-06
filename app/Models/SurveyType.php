@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SurveyType extends Model
 {
@@ -31,5 +32,13 @@ class SurveyType extends Model
         return [
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * @return HasMany<SurveyPeriod, $this>
+     */
+    public function periods(): HasMany
+    {
+        return $this->hasMany(SurveyPeriod::class);
     }
 }

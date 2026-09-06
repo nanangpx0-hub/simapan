@@ -78,6 +78,36 @@ class WorkUnitTable extends Component
         $this->selectedId = $this->selectedId === $id ? null : $id;
     }
 
+    public function delete(int $id): void
+    {
+        $unit = WorkUnit::findOrFail($id);
+        Gate::authorize('delete', $unit);
+
+        if ($unit->children()->exists()) {
+            $count = $unit->children()->count();
+            session()->flash('error', __(
+                'Tidak dapat menghapus unit kerja ":code" karena masih memiliki :count sub-unit kerja. '.
+                'Langkah yang dapat dilakukan: 1) Hapus atau pindahkan semua sub-unit kerja terlebih dahulu, atau 2) Nonaktifkan unit kerja ini saja.',
+                ['code' => $unit->code, 'count' => $count]
+            ));
+            return;
+        }
+
+        if ($unit->officers()->exists()) {
+            $count = $unit->officers()->count();
+            session()->flash('error', __(
+                'Tidak dapat menghapus unit kerja ":code" karena masih terhubung dengan :count petugas. '.
+                'Langkah yang dapat dilakukan: 1) Hapus atau pindahkan semua petugas ke unit kerja lain terlebih dahulu, atau 2) Nonaktifkan unit kerja ini saja.',
+                ['code' => $unit->code, 'count' => $count]
+            ));
+            return;
+        }
+
+        $unit->delete();
+        session()->flash('status', __('Unit kerja ":code" berhasil dihapus.', ['code' => $unit->code]));
+        $this->resetPage();
+    }
+
     public function exportUrl(): string
     {
         return route('master.unit-kerja.export', array_filter([

@@ -78,6 +78,26 @@ class SurveyTypeTable extends Component
         $this->selectedId = $this->selectedId === $id ? null : $id;
     }
 
+    public function delete(int $id): void
+    {
+        $type = SurveyType::findOrFail($id);
+        Gate::authorize('delete', $type);
+
+        if ($type->periods()->exists()) {
+            $count = $type->periods()->count();
+            session()->flash('error', __(
+                'Tidak dapat menghapus jenis survei ":code" karena masih digunakan oleh :count periode survei. '.
+                'Langkah yang dapat dilakukan: 1) Hapus atau pindahkan semua periode survei yang menggunakan jenis survei ini, atau 2) Nonaktifkan jenis survei ini saja.',
+                ['code' => $type->code, 'count' => $count]
+            ));
+            return;
+        }
+
+        $type->delete();
+        session()->flash('status', __('Jenis survei ":code" berhasil dihapus.', ['code' => $type->code]));
+        $this->resetPage();
+    }
+
     public function exportUrl(): string
     {
         return route('master.jenis-survei.export', array_filter([

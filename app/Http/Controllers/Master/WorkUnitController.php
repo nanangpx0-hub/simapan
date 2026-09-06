@@ -86,6 +86,28 @@ class WorkUnitController extends Controller
         return redirect()->route('master.unit-kerja.index');
     }
 
+    public function destroy(WorkUnit $workUnit): RedirectResponse
+    {
+        Gate::authorize('delete', $workUnit);
+
+        if ($workUnit->children()->exists()) {
+            return redirect()->route('master.unit-kerja.index')
+                ->with('error', __('Tidak dapat menghapus unit kerja karena masih memiliki sub-unit kerja.'));
+        }
+
+        if ($workUnit->officers()->exists()) {
+            return redirect()->route('master.unit-kerja.index')
+                ->with('error', __('Tidak dapat menghapus unit kerja karena masih terhubung dengan petugas.'));
+        }
+
+        DB::transaction(function () use ($workUnit): void {
+            $workUnit->delete();
+        });
+
+        return redirect()->route('master.unit-kerja.index')
+            ->with('status', __('Unit kerja berhasil dihapus.'));
+    }
+
     public function export(Request $request): BinaryFileResponse
     {
         Gate::authorize('viewAny', WorkUnit::class);

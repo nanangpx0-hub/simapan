@@ -96,6 +96,26 @@ class SurveyPeriodTable extends Component
         $this->selectedId = $this->selectedId === $id ? null : $id;
     }
 
+    public function delete(int $id): void
+    {
+        $period = SurveyPeriod::findOrFail($id);
+        Gate::authorize('delete', $period);
+
+        if ($period->allocations()->exists()) {
+            $count = $period->allocations()->count();
+            session()->flash('error', __(
+                'Tidak dapat menghapus periode survei ":code" karena masih terhubung dengan :count alokasi. '.
+                'Langkah yang dapat dilakukan: 1) Hapus atau pindahkan semua alokasi yang menggunakan periode survei ini, atau 2) Arsipkan periode survei ini saja.',
+                ['code' => $period->code, 'count' => $count]
+            ));
+            return;
+        }
+
+        $period->delete();
+        session()->flash('status', __('Periode survei ":code" berhasil dihapus.', ['code' => $period->code]));
+        $this->resetPage();
+    }
+
     public function exportUrl(): string
     {
         return route('master.survey_periods.export', array_filter([

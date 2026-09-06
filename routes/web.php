@@ -258,6 +258,7 @@ Route::middleware(['auth', 'permission:master.survey_type.manage'])->prefix('mas
     Route::post('jenis-survei', [SurveyTypeController::class, 'store'])->name('jenis-survei.store');
     Route::get('jenis-survei/{surveyType}/edit', [SurveyTypeController::class, 'edit'])->name('jenis-survei.edit');
     Route::match(['put', 'patch'], 'jenis-survei/{surveyType}', [SurveyTypeController::class, 'update'])->name('jenis-survei.update');
+    Route::delete('jenis-survei/{surveyType}', [SurveyTypeController::class, 'destroy'])->name('jenis-survei.destroy');
 });
 
 Route::middleware(['auth', 'permission:master.work_unit.view'])->prefix('master')->name('master.')->group(function () {
@@ -276,6 +277,7 @@ Route::middleware(['auth', 'permission:master.region.manage'])->prefix('master')
     Route::post('wilayah', [RegionController::class, 'store'])->name('wilayah.store');
     Route::get('wilayah/{region}/edit', [RegionController::class, 'edit'])->name('wilayah.edit');
     Route::match(['put', 'patch'], 'wilayah/{region}', [RegionController::class, 'update'])->name('wilayah.update');
+    Route::delete('wilayah/{region}', [RegionController::class, 'destroy'])->name('wilayah.destroy');
 });
 
 Route::middleware(['auth', 'permission:master.work_unit.manage'])->prefix('master')->name('master.')->group(function () {
@@ -284,6 +286,7 @@ Route::middleware(['auth', 'permission:master.work_unit.manage'])->prefix('maste
     Route::post('unit-kerja', [WorkUnitController::class, 'store'])->name('unit-kerja.store');
     Route::get('unit-kerja/{workUnit}/edit', [WorkUnitController::class, 'edit'])->name('unit-kerja.edit');
     Route::match(['put', 'patch'], 'unit-kerja/{workUnit}', [WorkUnitController::class, 'update'])->name('unit-kerja.update');
+    Route::delete('unit-kerja/{workUnit}', [WorkUnitController::class, 'destroy'])->name('unit-kerja.destroy');
 });
 
 Route::middleware(['auth', 'permission:master.survey_period.manage'])->prefix('master')->name('master.')->group(function () {
@@ -292,6 +295,7 @@ Route::middleware(['auth', 'permission:master.survey_period.manage'])->prefix('m
     Route::post('periode-survei', [SurveyPeriodController::class, 'store'])->name('survey_periods.store');
     Route::get('periode-survei/{surveyPeriod}/edit', [SurveyPeriodController::class, 'edit'])->name('survey_periods.edit');
     Route::match(['put', 'patch'], 'periode-survei/{surveyPeriod}', [SurveyPeriodController::class, 'update'])->name('survey_periods.update');
+    Route::delete('periode-survei/{surveyPeriod}', [SurveyPeriodController::class, 'destroy'])->name('survey_periods.destroy');
     Route::post('periode-survei/{surveyPeriod}/activate', [SurveyPeriodController::class, 'activate'])->name('survey_periods.activate');
     Route::post('periode-survei/{surveyPeriod}/close', [SurveyPeriodController::class, 'close'])->name('survey_periods.close');
     Route::post('periode-survei/{surveyPeriod}/archive', [SurveyPeriodController::class, 'archive'])->name('survey_periods.archive');
@@ -309,6 +313,7 @@ Route::middleware(['auth', 'permission:master.officer.manage'])->prefix('master'
     Route::post('petugas', [OfficerController::class, 'store'])->name('officers.store');
     Route::get('petugas/{officer}/edit', [OfficerController::class, 'edit'])->name('officers.edit');
     Route::match(['put', 'patch'], 'petugas/{officer}', [OfficerController::class, 'update'])->name('officers.update');
+    Route::delete('petugas/{officer}', [OfficerController::class, 'destroy'])->name('officers.destroy');
     Route::get('petugas/{officer}/alias/create', [OfficerAliasController::class, 'create'])->name('officers.aliases.create');
     Route::post('petugas/{officer}/alias', [OfficerAliasController::class, 'store'])->name('officers.aliases.store');
     Route::get('petugas/{officer}/alias/{alias}/edit', [OfficerAliasController::class, 'edit'])->name('officers.aliases.edit');
@@ -453,6 +458,10 @@ Route::middleware(['auth', 'permission:document.view'])->prefix('dokumen')->name
     Route::get('export', [DocumentController::class, 'export'])->name('export');
     Route::get('/', [DocumentController::class, 'index'])->name('index');
     Route::get('{document}', [DocumentController::class, 'show'])->name('show');
+});
+
+Route::middleware(['auth', 'permission:document.view'])->prefix('dokumen')->name('sampel.')->group(function () {
+    Route::get('sampel/bast', [DocumentTransferController::class, 'bastIndex'])->name('bast.index');
 });
 
 Route::middleware(['auth', 'permission:document.view'])->prefix('manifest')->name('document_manifests.')->group(function () {

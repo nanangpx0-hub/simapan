@@ -31,8 +31,8 @@
                                             <td class="py-2 px-3 font-mono">{{ $allocation->nks }}</td>
                                             <td class="py-2 px-3">{{ $allocation->period->code ?? '—' }}</td>
                                             <td class="py-2 px-3"><input type="number" name="rows[{{ $allocation->id }}][household_count_listing]" min="0" max="99999" value="0" class="border rounded px-2 py-1 w-24" /></td>
-                                            <td class="py-2 px-3"><input type="checkbox" name="rows[{{ $allocation->id }}][has_vsen_p]" value="1" checked /></td>
-                                            <td class="py-2 px-3"><input type="checkbox" name="rows[{{ $allocation->id }}][has_peta_ws]" value="1" checked /></td>
+                                            <td class="py-2 px-3"><input type="checkbox" name="rows[{{ $allocation->id }}][has_vsen_p]" value="1" /></td>
+                                            <td class="py-2 px-3"><input type="checkbox" name="rows[{{ $allocation->id }}][has_peta_ws]" value="1" /></td>
                                         </tr>
                                     @empty
                                         <tr><td colspan="6" class="py-4 px-3 text-center text-gray-500">{{ __('Tidak ada alokasi tersedia.') }}</td></tr>

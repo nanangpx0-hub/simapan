@@ -8,6 +8,7 @@ use App\Models\Officer;
 use App\Models\WorkUnit;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -86,6 +87,30 @@ class OfficerTable extends Component
     public function selectRow(int $id): void
     {
         $this->selectedId = $this->selectedId === $id ? null : $id;
+    }
+
+    public function delete(int $id): void
+    {
+        $officer = Officer::findOrFail($id);
+        Gate::authorize('delete', $officer);
+
+        if ($officer->allocations()->exists()) {
+            $count = $officer->allocations()->count();
+            session()->flash('error', __(
+                'Tidak dapat menghapus petugas ":code" karena masih terhubung dengan :count alokasi. '.
+                'Langkah yang dapat dilakukan: 1) Hapus atau pindahkan semua alokasi yang terhubung dengan petugas ini, atau 2) Nonaktifkan petugas ini saja.',
+                ['code' => $officer->code, 'count' => $count]
+            ));
+            return;
+        }
+
+        DB::transaction(function () use ($officer): void {
+            $officer->aliases()->forceDelete();
+            $officer->forceDelete();
+        });
+
+        session()->flash('status', __('Petugas ":code" berhasil dihapus.', ['code' => $officer->code]));
+        $this->resetPage();
     }
 
     public function exportUrl(): string

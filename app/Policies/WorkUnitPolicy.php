@@ -28,4 +28,9 @@ class WorkUnitPolicy
     {
         return $user->can('master.work_unit.manage');
     }
+
+    public function delete(User $user, WorkUnit $workUnit): bool
+    {
+        return $user->can('master.work_unit.manage');
+    }
 }

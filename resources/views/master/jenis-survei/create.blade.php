@@ -12,16 +12,23 @@
                     <form method="POST" action="{{ route('master.jenis-survei.store') }}">
                         @csrf
                         <div class="mb-4">
-                            <label for="code" class="block text-sm font-medium">{{ __('Kode (huruf kapital/angka, tidak dapat diubah)') }}</label>
-                            <input id="code" name="code" type="text" value="{{ old('code') }}" required class="mt-1 block w-full border rounded px-3 py-2" />
+                            <label for="code" class="block text-sm font-medium">{{ __('Kode') }}</label>
+                            <input id="code" name="code" type="text" value="{{ old('code') }}" required readonly class="mt-1 block w-full border rounded px-3 py-2 bg-gray-100" />
+                            <p class="mt-1 text-xs text-gray-500">{{ __('Contoh: SUSENAS, SERUTI, SUSENAS-2026') }}</p>
                         </div>
                         <div class="mb-4">
                             <label for="name" class="block text-sm font-medium">{{ __('Nama') }}</label>
-                            <input id="name" name="name" type="text" value="{{ old('name') }}" required class="mt-1 block w-full border rounded px-3 py-2" />
+                            <select id="name" name="name" required class="mt-1 block w-full border rounded px-3 py-2">
+                                <option value="">{{ __('— Pilih nama survei —') }}</option>
+                                <option value="SUSENAS" @selected(old('name') === 'SUSENAS')>SUSENAS</option>
+                                <option value="SERUTI" @selected(old('name') === 'SERUTI')>SERUTI</option>
+                            </select>
+                            <p class="mt-1 text-xs text-gray-500">{{ __('Pilihan: SUSENAS atau SERUTI') }}</p>
                         </div>
                         <div class="mb-4">
                             <label for="description" class="block text-sm font-medium">{{ __('Deskripsi') }}</label>
                             <textarea id="description" name="description" class="mt-1 block w-full border rounded px-3 py-2">{{ old('description') }}</textarea>
+                            <p class="mt-1 text-xs text-gray-500">{{ __('Contoh: Survei Sosial Ekonomi Nasional, Survei Rumah Tiga Bulanan') }}</p>
                         </div>
                         <div class="mb-4">
                             <label for="is_active" class="block text-sm font-medium">{{ __('Status') }}</label>
@@ -39,6 +46,11 @@
                         @endif
                         <button type="submit" class="underline">{{ __('Simpan') }}</button>
                     </form>
+                    <script>
+                        document.getElementById('name').addEventListener('change', function () {
+                            document.getElementById('code').value = this.value;
+                        });
+                    </script>
                 </div>
             </div>
         </div>

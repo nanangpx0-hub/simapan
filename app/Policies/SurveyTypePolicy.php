@@ -28,4 +28,9 @@ class SurveyTypePolicy
     {
         return $user->can('master.survey_type.manage');
     }
+
+    public function delete(User $user, SurveyType $surveyType): bool
+    {
+        return $user->can('master.survey_type.manage');
+    }
 }

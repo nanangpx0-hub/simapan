@@ -28,4 +28,9 @@ class RegionPolicy
     {
         return $user->can('master.region.manage');
     }
+
+    public function delete(User $user, Region $region): bool
+    {
+        return $user->can('master.region.manage');
+    }
 }

@@ -28,4 +28,9 @@ class SurveyPeriodPolicy
     {
         return $user->can('master.survey_period.manage');
     }
+
+    public function delete(User $user, SurveyPeriod $surveyPeriod): bool
+    {
+        return $user->can('master.survey_period.manage');
+    }
 }

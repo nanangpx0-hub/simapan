@@ -28,4 +28,9 @@ class OfficerPolicy
     {
         return $user->can('master.officer.manage');
     }
+
+    public function delete(User $user, Officer $officer): bool
+    {
+        return $user->can('master.officer.manage');
+    }
 }

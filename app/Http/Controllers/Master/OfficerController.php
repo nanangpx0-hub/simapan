@@ -108,6 +108,19 @@ class OfficerController extends Controller
         return redirect()->route('master.officers.index');
     }
 
+    public function destroy(Officer $officer): RedirectResponse
+    {
+        Gate::authorize('delete', $officer);
+
+        DB::transaction(function () use ($officer): void {
+            $officer->aliases()->forceDelete();
+            $officer->forceDelete();
+        });
+
+        return redirect()->route('master.officers.index')
+            ->with('status', __('Petugas berhasil dihapus.'));
+    }
+
     public function export(Request $request): BinaryFileResponse
     {
         Gate::authorize('viewAny', Officer::class);

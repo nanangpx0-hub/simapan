@@ -72,6 +72,23 @@ class SurveyTypeController extends Controller
         return redirect()->route('master.jenis-survei.index');
     }
 
+    public function destroy(SurveyType $surveyType): RedirectResponse
+    {
+        Gate::authorize('delete', $surveyType);
+
+        if ($surveyType->periods()->exists()) {
+            return redirect()->route('master.jenis-survei.index')
+                ->with('error', __('Tidak dapat menghapus jenis survei karena masih digunakan oleh periode survei.'));
+        }
+
+        DB::transaction(function () use ($surveyType): void {
+            $surveyType->delete();
+        });
+
+        return redirect()->route('master.jenis-survei.index')
+            ->with('status', __('Jenis survei berhasil dihapus.'));
+    }
+
     public function export(Request $request): BinaryFileResponse
     {
         Gate::authorize('viewAny', SurveyType::class);

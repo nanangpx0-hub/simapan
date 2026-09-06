@@ -90,6 +90,14 @@ class Officer extends Model
     }
 
     /**
+     * @return HasMany<Allocation, $this>
+     */
+    public function allocations(): HasMany
+    {
+        return $this->hasMany(Allocation::class);
+    }
+
+    /**
      * @param  Builder<Officer>  $query
      */
     public function scopeActive(Builder $query): Builder
